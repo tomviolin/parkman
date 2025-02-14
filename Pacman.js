@@ -32,10 +32,10 @@ class Pacman {
         this.medlevel = thislevel;
         this.lastmedcalc = thistime;
       }
-      print(thislevel);
+      //print(thislevel);
       let tremlevel = max(0.003,(26-thislevel)/7)*(random(this.speed)-this.speed/2);
-      print(tremlevel);
-      return max(tremlevel*3,0.00511);
+      //print(tremlevel);
+      return max(tremlevel*1.5,0.00511);
     }
     //questo metodo mostra PacMan
     show() {

@@ -141,15 +141,47 @@ class Terrain {
   }
   show(y, x) {
     if (this.food(y, x)) {
-      fill(255,255,120);
+      fill(255,255,250);
       ellipseMode(CENTER);
       let thispos = this.objectAt(y, x).pos;
-      ellipse(
-        thispos.x * cellWidth + cellWidth / 2,
-        thispos.y * cellHeight + cellHeight / 2,
-        this.r(y, x),
-        this.r(y, x)
-      );
+      if (!this.power(y,x)) {
+	      push();
+	      translate(
+		thispos.x * cellWidth + cellWidth / 2,
+		thispos.y * cellHeight + cellHeight / 2);
+	        rotate(PI/3);
+	      ellipse(0,0,
+		this.r(y, x)*1.9,
+		this.r(y, x)*1.9
+	      );
+	      stroke(200,200,200);
+	      strokeWeight(1);
+	      line(0,-this.r(y,x)*0.9,0,this.r(y,x)*0.9);
+	      pop();
+      } else {
+      	      fill(0,255,255);
+	      push();
+	      translate(thispos.x*cellWidth + cellWidth / 2,
+		      thispos.y*cellHeight + cellHeight / 2);
+	      scale(this.r(y,x));
+	      let rotangle = Date.now()/2000;
+	      rotangle -= floor(rotangle);
+	      rotangle *= TAU;
+	      rotate(rotangle);
+	      arc(-0.5,0,0.6,0.6,PI/2,3*PI/2);
+	      rectMode(CENTER);
+	      noStroke();
+	      strokeWeight(0);
+	      rect(-0.25,0,0.5,0.6);
+	      rotate(PI);
+	      fill(255,255,255);
+	      arc(-0.5,0,0.6,0.6,PI/2,3*PI/2);
+	      rectMode(CENTER);
+	      noStroke();
+	      strokeWeight(0);
+	      rect(-0.25,0,0.5,0.6);
+	      pop();
+	}
     } else if (this.wall(y, x)) {
       let wallbits = 0;
       //    1

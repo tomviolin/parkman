@@ -4,7 +4,7 @@ class Cell {
         this.food = food;
         this.pos = createVector(x, y);
         if (food)
-            this.r = cellWidth / 4;
+            this.r = cellWidth / 2;
         else this.r = cellWidth / 2;
     }
 

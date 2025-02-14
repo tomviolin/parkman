@@ -88,10 +88,10 @@ function draw() {
         //let 
         let pacmanpos = createVector(Math.floor(pacman.pos.x/cellWidth),
                                    Math.floor(pacman.pos.y/cellHeight));
-         console.log(`food? ${pacmanpos} '${terrain.cells[pacmanpos.y][pacmanpos.x]}'`);     
+         //console.log(`food? ${pacmanpos} '${terrain.cells[pacmanpos.y][pacmanpos.x]}'`);     
         if (terrain.food(pacmanpos.y, pacmanpos.x)) {
 	    if (terrain.power(pacmanpos.y,pacmanpos.x)){
-		    pacman.medlevel += 10;
+		    pacman.medlevel += 9;
 		    player.addScore(100);
 		    pacman.speed += 4;
 	    }
@@ -99,7 +99,7 @@ function draw() {
             terrain.cells[pacmanpos.y] = terrain.cells[pacmanpos.y].replaceAt(pacmanpos.x, ' '); 
             terrain.nFood--;
             player.addScore(10);
-            pacman.medlevel += 12;
+            pacman.medlevel += 19;
             //terrain.showall();//(i,j);
         }
             
