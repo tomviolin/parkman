@@ -141,7 +141,7 @@ class Terrain {
   }
   show(y, x) {
     if (this.food(y, x)) {
-      fill(255);
+      fill(255,255,120);
       ellipseMode(CENTER);
       let thispos = this.objectAt(y, x).pos;
       ellipse(
