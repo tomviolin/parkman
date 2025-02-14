@@ -54,7 +54,7 @@ class Pacman {
         } else if (this.dir.y <= -1) {
             this.imgIndex.x = 1 + this.open;
         }
-        image(sheetImage, this.pos.x+random(this.trem()), this.pos.y+random(this.trem()), this.r * 2.5, this.r * 2.5,
+        image(sheetImage, this.pos.x+random(this.trem()*3), this.pos.y+random(this.trem()*3), this.r * 2.5, this.r * 2.5,
             imgWidth * this.imgIndex.x, imgHeight * this.imgIndex.y, imgWidth, imgHeight);
     }
 
