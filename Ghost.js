@@ -12,7 +12,7 @@ class Ghost {
         this.commands = []
         this.flag = 0;
         this.form = 0;
-	this.paniclevel = 1.14;
+	this.paniclevel = 1.10;
     }
 
     changeForm() {
