@@ -12,6 +12,7 @@ class Ghost {
         this.commands = []
         this.flag = 0;
         this.form = 0;
+	this.paniclevel = 1.14;
     }
 
     changeForm() {
@@ -28,7 +29,7 @@ class Ghost {
     }
 
     chooseDir() {
-        let bias = pacman.speed > 1.20?-1:1;
+        let bias = pacman.speed > this.paniclevel?-1:1;
 	print('pacman.speed='+pacman.speed+'  bias: '+bias);
         if (this.pos.x == pacman.pos.x) {
             if (pacman.pos.y > this.pos.y &&
@@ -136,7 +137,7 @@ class Ghost {
         let xIndex = this.imgIndex.x + this.form;
 	let yIndex = this.imgIndex.y;
         imageMode(CENTER);
-	if (pacman.speed > 1.20) {
+	if (pacman.speed > this.paniclevel) {
 		xIndex = 8;
 		yIndex = 9;
 	}
