@@ -12,14 +12,14 @@ class User {
             image(sheetImage, i * 20, CANVAS_HEIGHT + (CANVAS_REAL_HEIGHT - CANVAS_HEIGHT) / 2, 15, 15,
                 imgWidth * 0, imgHeight * 3, imgWidth, imgHeight);
         }
-	text(pacman.medlevel, CANVAS_WIDTH-50,CANVAS_REAL_HEIGHT);
+	//text(pacman.medlevel, CANVAS_WIDTH-50,CANVAS_REAL_HEIGHT);
         //Shows the player's score
         for (var i = 0; i < this.scoreText.length; i++) {
             image(sheetImage, CANVAS_WIDTH / 2 + i * 20, CANVAS_HEIGHT + (CANVAS_REAL_HEIGHT - CANVAS_HEIGHT) / 2, 15, 15, (imgWidth / 2) * this.scoreText[i], imgHeight, imgWidth / 2, imgHeight / 2 - 2);
         }
         for (var i = 0; i < this.scoreSeparated.length; i++) {
             image(sheetImage, CANVAS_WIDTH * 8 / 10 + i * 20, CANVAS_HEIGHT + (CANVAS_REAL_HEIGHT - CANVAS_HEIGHT) / 2, 15, 15, (imgWidth / 2) * this.scoreSeparated[i], 0, imgWidth / 2, imgHeight / 2);
-            text(this.scoreSeparated[i], CANVAS_WIDTH / 2 + i * 20, CANVAS_HEIGHT + (CANVAS_REAL_HEIGHT - CANVAS_HEIGHT) / 2);
+            //text(this.scoreSeparated[i], CANVAS_WIDTH / 2 + i * 20, CANVAS_HEIGHT + (CANVAS_REAL_HEIGHT - CANVAS_HEIGHT) / 2);
         }
 
     }

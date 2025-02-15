@@ -115,6 +115,7 @@ class Terrain {
     if (y > this.ymax) y=this.ymin;
     if (x > this.xmax) x=this.xmin;
     if (x < this.xmin) x=this.xmax;
+    //console.log(`${i},${j} => ${y},${x}`);
     return this.cells[y][x] == "#";
   }
   food(i, j) {

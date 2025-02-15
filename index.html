@@ -9,16 +9,61 @@
 
 </head>
 
-<body>
+<body style="text-align: center; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
     <script src="sketch.js"></script>
     <script src="User.js"></script>
     <script src="Terrain.js"></script>
     <script src="Cell.js"></script>
     <script src="Pacman.js"></script>
     <script src="Ghost.js"></script>
-
-
-
 </body>
-
+<script>
+    window.buttonCallback = null;
+    window.startButton = null;
+    function createElementFromHTML(htmlString) {
+        const range = document.createRange();
+        range.selectNode(document.body); // Required for the range to work in all browsers
+        return range.createContextualFragment(htmlString).firstChild;
+    }
+    function buttonPressedCallback() {
+        startButton.remove();
+        var cvas = document.getElementsByTagName("canvas")[0];
+        setTimeout(() => {
+            cvas.requestPointerLock = cvas.requestPointerLock ||
+                cvas.mozRequestPointerLock ||
+                cvas.webkitRequestPointerLock;
+            cvas.requestPointerLock();
+        }, 1000);
+        //cvas.focus();
+        if (buttonCallback != null) {   
+            buttonCallback();
+        }
+    }
+    function showStartButton(message, callback) {
+        buttonCallback = callback;
+        const htmlString = `
+        <button style='
+            z-index: 100;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            font-size: 50px; 
+            font-weight: bold; 
+            white-space: nowrap; 
+            position: absolute; 
+            bottom:50%; 
+            left:50%; 
+            transform: translate(-50%,-50%);' 
+            onclick='buttonPressedCallback()'>
+            ${message}
+        </button>`;
+        var ddiv = document.createElement("div");
+        ddiv.innerHTML = htmlString;
+        startButton = ddiv.firstElementChild;
+        console.log(startButton);
+        // Create a button to restart the game
+        document.body.appendChild(startButton);
+        startButton.focus();
+    }
+</script>
 </html>

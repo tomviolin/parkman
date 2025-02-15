@@ -23,7 +23,9 @@ function preload() {
     player = new User();
 }
 let didSetup=false;
-function setup() {
+
+function mysetup() {
+    let didDidSetup = didSetup;
     if (!didSetup){
         createCanvas(CANVAS_WIDTH, CANVAS_REAL_HEIGHT);
         terrain = new Terrain();
@@ -34,16 +36,29 @@ function setup() {
     ghosts.push(new Ghost(8, 8, 14.5 * cellWidth, 14.5 * cellHeight));
     ghosts.push(new Ghost(0, 9, 15.5 * cellWidth, 14.5 * cellHeight));
     pacman = new Pacman(14 * cellWidth, 23.5 * cellHeight);
-    spawn = true;
+    spawn = false;
     count = 0;
+    doLoop=true;
+    textAlign(CENTER);
+    textSize(40);
+    textStyle(BOLD);
+    fill(255, 211, 0);
+    text('YOU DIED!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+    //doLoop = false;
+}   
+function setup() {
+    frameRate(30);
+	mysetup();
 }
 
 function draw() {
-    if (!doLoop) return;
+    if (!doLoop) {
+        return;
+    };
     background(0);
     terrain.showall();
     player.statusBar();
-    count++;
+    if (spawn) count++;
     fill(255);
     //(13 * cellWidth, 12 * cellHeight, cellWidth * 2, cellHeight);
     noFill();
@@ -69,15 +84,17 @@ function draw() {
                 ghosts[3].setPos(9 * cellWidth + cellWidth / 2, 17 * cellHeight + cellHeight / 2);
                 spawn = false;
             }
-        }
+	}
         pacman.show();
         pacman.move();
         for (let ghost of ghosts) {
             ghost.move();
             ghost.show();
             if (pacman.hits(ghost)) {
-		if (pacman.speed > 1.20) {
-		    // pacman does not die
+		if (pacman.speed > ghost.warnlevel) {
+		    // Ghost dies
+            //console.log("ghost");
+            ghost.setupGhost();
 		} else {
 			// pacman dies
 			pacman.flag = 0;
@@ -108,13 +125,34 @@ function draw() {
         }
             
         
-        terrain.showall();//(i,j);
+        //terrain.showall();//(i,j);
   
-    }
+        if (count == 0) {
+            if (startButton) return;
+            textAlign(CENTER);
+            textSize(60);
+            textStyle(BOLD);
+            fill(255, 211, 0);
+            console.log("showing start");
+            showStartButton("Press ENTER to begin", 
+                () => {
+                    setup();
+                    doLoop = true;
+                    count = 0;
+                    spawn = true;
+                }
+            );
+            doLoop = false;
+        }
+            
+
+	}
+    
 
 }
 
 function keyPressed() {
+    //console.log(keyCode);
     if (keyCode === RIGHT_ARROW || key === 'd' || key === 'D') {
         pacman.addInstruction(1, 0);
     } else if (keyCode === LEFT_ARROW || key === 'a' || key === 'A') {
@@ -127,6 +165,10 @@ function keyPressed() {
         setup();
         doLoop=true;
     } else if (keyCode === ENTER && pacman.death && didSetup) {
-	    document.reload();
+	    document.locatioon.reload();
+    } else if (keyCode === ENTER && !pacman.death && spawn==false && count == 0) {
+	    spawn=true;
+	    count=1;
+	    pacman.medlevel = 100;
     }
 }

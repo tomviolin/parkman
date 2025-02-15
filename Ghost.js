@@ -1,18 +1,28 @@
 class Ghost {
     constructor(sx, sy, x, y) {
+        this.org_sx = sx;
+        this.org_sy = sy;
+        this.org_x = x;
+        this.org_y = y;
+        this.setupGhost();
+
+    }
+
+    setupGhost() {
         this.r = cellWidth * .5;
-        this.imgIndex = createVector(sx, sy);
-        //posizione reale
-        this.pos = createVector(x, y);
-        //posizione nella griglia
+        this.imgIndex = createVector(this.org_sx, this.org_sy);
+        //posizione reale // in english: real position
+        this.pos = createVector(this.org_x, this.org_y);
+        //posizione nella griglia // in english: position in the grid
         this.currentCell = createVector(Math.floor(this.pos.x / cellWidth), Math.floor(this.pos.y / cellHeight));
         this.virtualPos = createVector(14, 24);
-        //direzione
+        //direzione // in english: direction
         this.dir = createVector(0, 0);
         this.commands = []
         this.flag = 0;
         this.form = 0;
-	this.paniclevel = 1.10;
+    	this.paniclevel = 1.02;
+        this.warnlevel = 1.009;
     }
 
     changeForm() {
@@ -29,8 +39,8 @@ class Ghost {
     }
 
     chooseDir() {
-        let bias = pacman.speed > this.paniclevel?-1:1;
-	print('pacman.speed='+pacman.speed+'  bias: '+bias);
+        let bias = pacman.speed > this.warnlevel?-1:1;
+	    //print('pacman.speed='+pacman.speed+'  bias: '+bias);
         if (this.pos.x == pacman.pos.x) {
             if (pacman.pos.y > this.pos.y &&
                 !terrain.wall(this.currentCell.y + 1*bias,this.currentCell.x)) {
@@ -135,12 +145,20 @@ class Ghost {
         if (this.flag == 10)
             this.changeForm();
         let xIndex = this.imgIndex.x + this.form;
-	let yIndex = this.imgIndex.y;
+    	let yIndex = this.imgIndex.y;
         imageMode(CENTER);
-	if (pacman.speed > this.paniclevel) {
-		xIndex = 8;
-		yIndex = 9;
-	}
+	    if (pacman.speed > this.paniclevel) {
+		    xIndex = 6;
+		    yIndex = 4;
+	    } else if (pacman.speed > this.warnlevel) {
+            if (Date.now() % 1000 > 500) {
+                xIndex = 8;
+                yIndex = 4;
+            } else {
+                xIndex = 6;
+                yIndex = 4;
+            }
+        }
         image(sheetImage, this.pos.x, this.pos.y, this.r * 2.5, this.r * 2.5,
             imgWidth * xIndex, imgHeight * yIndex, imgWidth, imgHeight);
     }
