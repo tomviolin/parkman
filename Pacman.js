@@ -1,3 +1,4 @@
+let doLoop=true;
 class Pacman {
     constructor(x, y) {
         //posizione nel Canvas
@@ -176,19 +177,21 @@ class Pacman {
             image(sheetImage, this.pos.x, this.pos.y, this.r * 2, this.r * 2,
                 imgWidth * xIndex, imgHeight * this.imgIndex.y, imgWidth, imgHeight);
             if (this.deathStage == 11) {
-                noLoop();
+                doLoop=false;
                 textAlign(CENTER);
                 textSize(60);
                 textStyle(BOLD);
                 fill(255, 211, 0);
-                text('YOU LOST!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+                text('YOU DIED!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
                 player.lives--;
                 for (var i = ghosts.length; i > 0; i--)
                     ghosts.pop();
+                textSize(50);
                 if (player.lives >= 0) {
-                    textSize(50);
-                    text('press enter to restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50);
-                }
+                    text('press enter for next life', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50);
+                } else {
+                    text('***GAME OVER*** press enter to reset', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50);
+		}
             }
         }
     }

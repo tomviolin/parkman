@@ -22,20 +22,24 @@ function preload() {
     sheetImage = loadImage('PacManSheet.png');
     player = new User();
 }
-
+let didSetup=false;
 function setup() {
-    createCanvas(CANVAS_WIDTH, CANVAS_REAL_HEIGHT);
-    pacman = new Pacman(14 * cellWidth, 23.5 * cellHeight);
+    if (!didSetup){
+        createCanvas(CANVAS_WIDTH, CANVAS_REAL_HEIGHT);
+        terrain = new Terrain();
+	didSetup=true;
+    }
     ghosts.push(new Ghost(0, 6, 12.5 * cellWidth, 14.5 * cellHeight));
     ghosts.push(new Ghost(0, 8, 13.5 * cellWidth, 14.5 * cellHeight));
     ghosts.push(new Ghost(8, 8, 14.5 * cellWidth, 14.5 * cellHeight));
     ghosts.push(new Ghost(0, 9, 15.5 * cellWidth, 14.5 * cellHeight));
-    terrain = new Terrain();
+    pacman = new Pacman(14 * cellWidth, 23.5 * cellHeight);
     spawn = true;
     count = 0;
 }
 
 function draw() {
+    if (!doLoop) return;
     background(0);
     terrain.showall();
     player.statusBar();
@@ -46,7 +50,7 @@ function draw() {
     if (pacman.death)
         pacman.die();
     else if (terrain.nFood == 0) {
-        noLoop();
+        doLoop=false;
         textAlign(CENTER);
         textSize(60);
         textStyle(BOLD);
@@ -121,6 +125,8 @@ function keyPressed() {
         pacman.addInstruction(0, 1);
     } else if (keyCode === ENTER && pacman.death && player.lives >= 0) {
         setup();
-        loop();
+        doLoop=true;
+    } else if (keyCode === ENTER && pacman.death && didSetup) {
+	    document.reload();
     }
 }
