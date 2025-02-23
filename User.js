@@ -9,7 +9,7 @@ class User {
     statusBar() {
         //Shows the number of lives left
         for (let i = 1; i < this.lives + 1; i++) {
-            image(sheetImage, i * 20, CANVAS_HEIGHT + (CANVAS_REAL_HEIGHT - CANVAS_HEIGHT) / 2, 15, 15,
+            image(sheetImage, i * 20+(3*pacman.trem()*(random()-0.5)), (3*pacman.trem()*(random()-0.5))+CANVAS_HEIGHT + (CANVAS_REAL_HEIGHT - CANVAS_HEIGHT) / 2, 15, 15,
                 imgWidth * 0, imgHeight * 3, imgWidth, imgHeight);
         }
 	//text(pacman.medlevel, CANVAS_WIDTH-50,CANVAS_REAL_HEIGHT);

@@ -1,17 +1,15 @@
 
-
-
 class Terrain {
   constructor() {
-    this.wba={
+    this.wba = {
       0b0000: "",
       0b0001: "line(0,0,0,-1);",
       0b0010: "line(0,0,1,0);",
       0b0100: "line(0,0,0,1);",
       0b1000: "line(0,0,-1,0);",
 
-      0b0011: "arc( 1,-1, 2,2,TAU/4,   TAU/4*2);",
-      0b0110: "arc( 1, 1, 2,2,TAU/4*2, TAU/4*3);",
+      0b0011: "arc( 1,-1, 2,2, TAU/4*1, TAU/4*2);",
+      0b0110: "arc( 1, 1, 2,2, TAU/4*2, TAU/4*3);",
       0b1100: "arc(-1, 1, 2,2, TAU/4*3, TAU/4*4);",
       0b1001: "arc(-1,-1, 2,2, 0,       TAU/4);",
 
@@ -26,15 +24,12 @@ class Terrain {
       0b1111: "",//rect(0,0,2,2);"
 
     }
-
-    
-    
-    this.cba={
+    this.cba = {
       0b1110: "arc( 1,-1, 2,2, TAU/4*1, TAU/4*2);",
       0b0111: "arc(-1,-1, 2,2, TAU/4*0, TAU/4*1);",
       0b1011: "arc(-1, 1  ,2,2, TAU/4*3, TAU/4*0);",
       0b1101: "arc( 1, 1, 2,2,  TAU/4*2, TAU/4*3);",
-    }  
+    }
     /*
     
       XX
@@ -53,11 +48,12 @@ class Terrain {
      XTX  0b1011
       XX
     
-*/    
-    
+*/
+
     // characters:
     //  # = wall
     //  * = food
+    //  o = power pellet
     //    = open
     this.cells = [
       "############################",
@@ -83,7 +79,7 @@ class Terrain {
       "#..........................#",
       "#.####.#####.##.#...#.####.#",
       "#o####.#####.##.##.##.####o#",
-      "#...##................##...#",
+      "#...##........ .......##...#",
       "###.##.##.########.##.##.###",
       "###.##.##.########.##.##.###",
       "#......##....##....##......#",
@@ -92,98 +88,134 @@ class Terrain {
       "#..........................#",
       "############################",
     ];
-    this.xmin = 0;
-    this.ymin = 0;
-    this.xmax = this.cells[0].length-1;
-    this.ymax = this.cells.length-1;
+    this.jmin = 0;
+    this.imin = 0;
+    this.jmax = this.cells[0].length - 1;
+    this.imax = this.cells.length - 1;
 
     this.nFood = 0;
 
-    for (let i = 0; i < this.cells.length; i++) {
-      for (let j = 0; j < this.cells[i].length; j++) {
-        if (this.food(i,j)) {
+    for (let i = this.imin; i < this.imax; i++) {
+      for (let j = this.jmin; j < this.jmax; j++) {
+        if (this.foodatcell(i, j)) {
           this.nFood++;
         }
       }
     }
   }
 
-  wall(i, j) {
-    let x=j;
-    let y=i;
-    if (y < this.ymin) y=this.ymax;
-    if (y > this.ymax) y=this.ymin;
-    if (x > this.xmax) x=this.xmin;
-    if (x < this.xmin) x=this.xmax;
-    //console.log(`${i},${j} => ${y},${x}`);
-    return this.cells[y][x] == "#";
-  }
-  food(i, j) {
-    return this.power(i,j) || this.cells[i][j] == ".";
-  }
-  power(i,j) {
-    return this.cells[i][j] == 'o';
-  }
-  r(i, j) {
-    if (this.food(i, j)) {
-      if (this.power(i,j)) {
-        return cellWidth / 1.2;
-      }
-      return cellWidth / 4;
-    } else {
-      return cellWidth / 2;
+  wallatcell(ip, jp) {
+    let i = (ip - this.imin) % (this.imax - this.imin + 1) + this.imin;
+    let j = (jp - this.jmin) % (this.jmax - this.jmin + 1) + this.jmin;
+    try {
+      return this.cells[i][j] == "#";
+    } catch (e) {
+      return false;
     }
   }
-  pos(i, j) {
-    return {
-      x: Math.floor(j / cellWidth),
-      y: Math.floor(i / cellHeight),
-    };
+  wall(ip, jp) {
+    let i = (ip - this.imin) % (this.imax - this.imin + 1) + this.imin;
+    let j = (jp - this.jmin) % (this.jmax - this.jmin + 1) + this.jmin;
+    return this.wallatcell(i, j);
   }
-  show(y, x) {
-    if (this.food(y, x)) {
-      fill(255,255,250);
+  wallatpix(x, y) {
+    var cellpos = this.cell_pix2ij(x, y);
+    return this.wallatcell(cellpos.i, cellpos.j);
+  }
+  foodatcell(ip, jp) {
+    //console.log(`foodatcell(${ip},${jp})`);
+    let i = (ip - this.imin) % (this.imax - this.imin + 1) + this.imin;
+    let j = (jp - this.jmin) % (this.jmax - this.jmin + 1) + this.jmin;
+    return this.cells[i][j] == '.' || this.poweratcell(i, j);
+  }
+  foodatpix(x, y) {
+    let cc = this.cell_pix2ij(x, y);
+    return this.foodatcell(cc.i, cc.j);
+  }
+  poweratcell(ip, jp) {
+    let i = (ip - this.imin) % (this.imax - this.imin + 1) + this.imin;
+    let j = (jp - this.jmin) % (this.jmax - this.jmin + 1) + this.jmin;
+    return this.cells[i][j] == 'o';
+  }
+  poweratpix(x, y) {
+    let cc = this.cell_pix2ij(x, y);
+    return this.poweratcell(cc.i, cc.j);
+  }
+
+  radiusatcell(ip, jp) {
+    let i = (ip - this.imin) % (this.imax - this.imin + 1) + this.imin;
+    let j = (jp - this.jmin) % (this.jmax - this.jmin + 1) + this.jmin;
+    if (this.poweratcell(i, j)) {
+      return cellWidth / 1.3;
+    } else if (this.foodatcell(i, j)) {
+      return cellWidth / 4;
+    } else {
+      return cellWidth / 4;
+    }
+  }
+  radiusatpix(x, y) {
+    return this.radiusatcell(Math.floor((y / cellHeight), Math.floor(x / cellWidth)));
+  }
+
+  cell_ij2pix(i, j) {
+    return createVector(j * cellWidth, i * cellHeight);
+  }
+
+  cell_pix2ij(x, y) {
+    return { i: Math.floor((y / cellHeight)), j: Math.floor(x / cellWidth) };
+  }
+
+  showcellij(ip, jp) {
+    let i = (ip - this.imin) % (this.imax - this.imin + 1) + this.imin;
+    let j = (jp - this.jmin) % (this.jmax - this.jmin + 1) + this.jmin;
+
+    if (this.foodatcell(i, j)) {
+      // drawing food
+      fill(255, 255, 250); // off-white yellow
       ellipseMode(CENTER);
-      let thispos = this.objectAt(y, x).pos;
-      if (!this.power(y,x)) {
-	      push();
-	      translate(
-		thispos.x * cellWidth + cellWidth / 2,
-		thispos.y * cellHeight + cellHeight / 2);
-	        rotate(PI/3);
-	      ellipse(0,0,
-		this.r(y, x)*1.9,
-		this.r(y, x)*1.9
-	      );
-	      stroke(200,200,200);
-	      strokeWeight(1);
-	      line(0,-this.r(y,x)*0.9,0,this.r(y,x)*0.9);
-	      pop();
+      let thisxypos = this.cell_ij2pix(i, j);
+      if (!this.poweratcell(i, j)) {
+        // regular food - carbidopa/levadopa (Sinemet) pill
+        push();
+        translate(
+          thisxypos.x + cellWidth / 2,
+          thisxypos.y + cellHeight / 2
+        );
+        scale(this.radiusatcell(i, j));
+        rotate(PI / 3);
+        ellipse(0, 0, 1.9, 1.9);
+        stroke(200, 200, 200);
+        strokeWeight(.2);
+        line(0, -0.8, 0, 0.8);
+        pop();
       } else {
-      	      fill(0,255,255);
-	      push();
-	      translate(thispos.x*cellWidth + cellWidth / 2,
-		      thispos.y*cellHeight + cellHeight / 2);
-	      scale(this.r(y,x));
-	      let rotangle = Date.now()/2000;
-	      rotangle -= floor(rotangle);
-	      rotangle *= TAU;
-	      rotate(rotangle);
-	      arc(-0.5,0,0.6,0.6,PI/2,3*PI/2);
-	      rectMode(CENTER);
-	      noStroke();
-	      strokeWeight(0);
-	      rect(-0.25,0,0.5,0.6);
-	      rotate(PI);
-	      fill(255,255,255);
-	      arc(-0.5,0,0.6,0.6,PI/2,3*PI/2);
-	      rectMode(CENTER);
-	      noStroke();
-	      strokeWeight(0);
-	      rect(-0.25,0,0.5,0.6);
-	      pop();
-	}
-    } else if (this.wall(y, x)) {
+        // power pellet - Rytary capsule, two colors: cyan and off-white yellow
+        fill(0, 255, 255); // cyan
+        push();
+        translate(
+          thisxypos.x + cellWidth / 2,
+          thisxypos.y + cellHeight / 2
+        );
+        scale(this.radiusatcell(i, j));
+        let rotangle = Date.now() / 2000;
+        rotangle -= floor(rotangle);
+        rotangle *= TAU;
+        rotate(rotangle);
+        arc(-0.45, 0, 0.6, 0.6, PI / 2, 3 * PI / 2);
+        rectMode(CENTER);
+        noStroke();
+        strokeWeight(0);
+        rect(-0.25, 0, 0.51, 0.6);
+        rotate(PI);
+        fill(255, 255, 250); // off-white yellow
+        arc(-0.45, 0, 0.6, 0.6, PI / 2, 3 * PI / 2);
+        rectMode(CENTER);
+        noStroke();
+        strokeWeight(0);
+        rect(-0.25, 0, 0.51, 0.6);
+        pop();
+      }
+    } else if (this.wall(i, j)) {
       let wallbits = 0;
       //    1
       //   8T2
@@ -194,28 +226,28 @@ class Terrain {
       //   4 2
 
       // which adjoining faces are on?
-      if (this.wall(y - 1, x)) wallbits += 1;
-      if (this.wall(y, x - 1)) wallbits += 8;
-      if (this.wall(y + 1, x)) wallbits += 4;
-      if (this.wall(y, x + 1)) wallbits += 2;
+      if (this.wall(i - 1, j)) wallbits += 1;
+      if (this.wall(i, j - 1)) wallbits += 8;
+      if (this.wall(i + 1, j)) wallbits += 4;
+      if (this.wall(i, j + 1)) wallbits += 2;
 
       // which corners are on?
-      if (this.wall(y-1,x-1)) cornbits += 8;
-      if (this.wall(y-1,x+1)) cornbits += 1;
-      if (this.wall(y+1,x+1)) cornbits += 2;
-      if (this.wall(y+1,x-1)) cornbits += 4;
-      
+      if (this.wall(i - 1, j - 1)) cornbits += 8;
+      if (this.wall(i - 1, j + 1)) cornbits += 1;
+      if (this.wall(i + 1, j + 1)) cornbits += 2;
+      if (this.wall(i + 1, j - 1)) cornbits += 4;
+
       fill(0, 0, 255);
       noStroke();
-      let thispos = this.objectAt(y, x).pos;
+      let thisxypos = this.cell_ij2pix(i, j);
       push();
       translate(
-        thispos.x * cellWidth + cellWidth / 2,
-        thispos.y * cellHeight + cellHeight / 2-1
+        thisxypos.x + cellWidth / 2,
+        thisxypos.y + cellHeight / 2 - 1
       );
       scale(cellWidth / 2, cellHeight / 2);
       rectMode(CENTER);
-      
+
       //rect(0,0,2,2);
 
       /*
@@ -246,38 +278,42 @@ class Terrain {
             X
             
             */
-            let doit;
-            if (wallbits == 0b1111) {
-              // now we care about corners
-              doit = this.cba[cornbits];
-              //doit="arc(0,0,2,2,0,0);textSize(1);text('"+(cornbits)+"',-0.5,0.5)";
-            } else {
-              doit = this.wba[wallbits];
-            }
+      let doit;
+      if (wallbits == 0b1111) {
+        // now we care about corners
+        doit = this.cba[cornbits];
+        //doit="arc(0,0,2,2,0,0);textSize(1);text('"+(cornbits)+"',-0.5,0.5)";
+      } else {
+        doit = this.wba[wallbits];
+      }
       noFill();
-      stroke(0,108,255);
-      strokeWeight(cellWidth*0.03);
+      stroke(0, 108, 255);
+      strokeWeight(cellWidth * 0.03);
       eval(doit);
       //rect(0,0,2,2);
-            //console.log(doit);
+      //console.log(doit);
 
-        pop();
+      pop();
 
-      }
+    }
   }
   showall() {
     for (let i = 0; i < this.cells.length; i++) {
       for (let j = 0; j < this.cells[i].length; j++) {
-        this.show(i, j);
+        this.showcellij(i, j);
       }
     }
   }
-
-  objectAt(i, j) {
-    return {
-      food: this.food(i, j),
-      wall: this.wall(i, j),
-      pos: { x: j, y: i },
-    };
+  showpos(x, y) {
+    let i = Math.floor(y / cellHeight);
+    let j = Math.floor(x / cellWidth);
+    this.showcellij(i, j);
   }
+
+  setcellatxy(x, y, achar) {
+    let cc = this.cell_pix2ij(x, y);
+    console.log(`setcellatxy(${x},${y},${achar}) => cell_ij2pix(${cc.i},${cc.j})`);
+    this.cells[cc.i] = this.cells[cc.i].substring(0, cc.j) + achar + this.cells[cc.i].substring(cc.j + 1);
+  }
+
 }

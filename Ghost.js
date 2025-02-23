@@ -21,8 +21,8 @@ class Ghost {
         this.commands = []
         this.flag = 0;
         this.form = 0;
-    	this.paniclevel = 1.02;
-        this.warnlevel = 1.009;
+    	this.paniclevel = 1.06;
+        this.warnlevel = 1.005;
     }
 
     changeForm() {
@@ -118,7 +118,7 @@ class Ghost {
         return false;
 
     }
-
+    
     addInstruction(xdir, ydir) {
         this.commands.push(createVector(xdir, ydir));
     }
