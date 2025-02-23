@@ -7,7 +7,7 @@
 //  The Terrain object will be responsible for maintenance of
 //  the cell grid and converting pixel coordinates to cell coordinates
 //  and vice versa
-let doLoop = true;
+
 class Pacman {
     constructor(i, j) {
         //posizione nel Canvas
@@ -51,13 +51,16 @@ class Pacman {
             this.lastmedcalc = thistime;
         }
         //print(thislevel);
-        let tremlevel = max(0.003, (26 - thislevel) / 7) * (random(this.speed) - this.speed / 2);
+        let tremlevel = max(0.003, (26 - thislevel) / 7);// * (random(this.speed) - this.speed / 2);
         //print(tremlevel);
         return max(tremlevel * 1.5, 0.00511);
     }
     //questo metodo mostra PacMan sullo schermo 
     //   in english: this method shows PacMan on the screen
     show() {
+        s_shaky.setVolume(this.trem()*0.5);
+        let k = exp(-this.trem()*0.09);
+        s_siren1.setVolume(k);
         this.changeMouth();
         fill(255);
         if (this.dir.x > 0) {
@@ -70,8 +73,8 @@ class Pacman {
             this.imgIndex.x = 1 + this.open;
         }
         imageMode(CENTER);
-        image(sheetImage, this.pos.x+(random(0)-0.5)*this.trem()*5,//+ cellWidth/2, 
-            this.pos.y+(random(0)-0.5) * this.trem()*5,//+ cellHeight/2, 
+        image(sheetImage, this.pos.x+(random(1)-0.5)*this.trem()*3,//+ cellWidth/2, 
+            this.pos.y+(random(1)-0.5) * this.trem()*3,//+ cellHeight/2, 
             this.r * 2.5, this.r * 2.5,
             imgWidth * this.imgIndex.x, imgHeight * this.imgIndex.y, imgWidth, imgHeight);
     }
@@ -209,8 +212,9 @@ class Pacman {
         }
         this.setDir(thisCommand.x, thisCommand.y);
         //console.log(`MOVING: thisCommand: [${thisCommand.x},${thisCommand.y}] this.dir: [${this.dir.x},${this.dir.y}] this.pos: [${this.pos.x},${this.pos.y}]`);
-        this.pos.x = this.pos.x + this.dir.x * this.speed * dt *(1-.7*(random(0))*this.trem());
-        this.pos.y = this.pos.y + this.dir.y * this.speed * dt*(1-.7*(random(0))*this.trem());
+        let k = exp(-this.trem()*0.08)*0.8+0.2;
+        this.pos.x = this.pos.x + this.dir.x * this.speed * dt * k;
+        this.pos.y = this.pos.y + this.dir.y * this.speed * dt*k;
         if (this.dir.x != 0 || this.dir.y == 0) {
             // must center y onto grid
             this.pos.y = Math.floor(this.pos.y / cellHeight) * cellHeight + cellHeight / 2;
@@ -222,6 +226,7 @@ class Pacman {
         this.speed = (this.speed-1)*0.9940  + 1;
     }
 
+ 
 
 
 
@@ -256,6 +261,10 @@ class Pacman {
     //Questo metodo gestisce l'animazione della morte
     //in english: this method handles the death animation
     die() {
+        if (this.deathStage == 0) {
+            stop_all_sounds();
+            s_death.play();
+        }
         var now = Date.now();
         if (now - this.lastmove > 1000 / 10) {
             this.lastmove = now;
@@ -281,9 +290,10 @@ class Pacman {
                 ghosts = [];
                 textSize(30);
                 if (player.lives >= 0) {
-                    text('press enter for next life', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50);
+                    showStartButton('press enter for next life',()=>{document.location.reload();});// CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50);
                 } else {
-                    text('***GAME OVER*** press enter to reset', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50);
+                    showStartButton('***GAME OVER*** press enter to reset',()=>{document.location.reload();});
+                    //  text('***GAME OVER*** press enter to reset', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50);
                 }
             }
         }

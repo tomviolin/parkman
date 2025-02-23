@@ -5,7 +5,7 @@ class Ghost {
         this.org_x = x;
         this.org_y = y;
         this.setupGhost();
-
+        this.panicFlag = 0;
     }
 
     setupGhost() {
@@ -150,7 +150,9 @@ class Ghost {
 	    if (pacman.speed > this.paniclevel) {
 		    xIndex = 6;
 		    yIndex = 4;
+            this.panicFlag = 2;
 	    } else if (pacman.speed > this.warnlevel) {
+            pacman.count = 0;
             if (Date.now() % 1000 > 500) {
                 xIndex = 8;
                 yIndex = 4;
@@ -158,6 +160,19 @@ class Ghost {
                 xIndex = 6;
                 yIndex = 4;
             }
+            this.panicFlag = 1;
+        } else {
+            if (this.panicFlag == 1) {
+                this.clearCommands();
+                this.panicFlag = 0;
+                pacman.count = 0;
+                s_power.stop();
+                s_retreat.stop();
+                s_siren1.stop();
+                s_siren2.stop();
+                s_siren1.loop();
+            }
+            this.panicFlag = 0;
         }
         image(sheetImage, this.pos.x, this.pos.y, this.r * 2.5, this.r * 2.5,
             imgWidth * xIndex, imgHeight * yIndex, imgWidth, imgHeight);

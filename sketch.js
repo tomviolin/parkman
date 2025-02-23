@@ -17,9 +17,60 @@ String.prototype.replaceAt = function (index, replacement) {
     return this.substring(0, index) + replacement + this.substring(index + replacement.length);
 }
 
+let s_munch1=null,
+    s_munch2 =null,
+    s_munch12 = null,
+    s_death = null, 
+    s_power = null,
+    s_eatghost=null,
+    s_retreat=null,
+    s_intro = null,
+    s_siren1 = null,
+    s_siren2 = null,
+    s_shaky = null;
+let pacman, terrain, player, rb;
+let doLoop = false;
+let oneLoop = false;
+let startButton = false;
+function showStartButton(text, callback) {
+    startButton = true;
+    let sb = createButton(text);
+    sb.position(CANVAS_WIDTH / 2 - 100, CANVAS_HEIGHT / 2);
+    sb.mousePressed(() => {
+        callback();
+    });
+    
+}
 
+function stop_all_sounds() {
+    s_munch1.stop();
+    s_munch2.stop();
+    s_munch12.stop();
+    s_power.stop();
+    s_eatghost.stop();
+    s_retreat.stop();
+    s_intro.stop();
+    s_siren1.stop();
+    s_siren2.stop();
+    s_shaky.stop();
+}
+
+
+
+//
 function preload() {
     sheetImage = loadImage('PacManSheet.png');
+    s_munch1 = loadSound('audios/munch_1.mp3');
+    s_munch2 = loadSound('audios/munch_2.mp3');
+    s_munch12 = loadSound('audios/munch_1_2.mp3');
+    s_death = loadSound('audios/pacman_death.mp3');
+    s_power = loadSound('audios/power_pellet.mp3');
+    s_eatghost = loadSound('audios/eat_ghost.mp3');
+    s_retreat = loadSound('audios/retreating.mp3');
+    s_intro = loadSound('audios/game_start.mp3', hhh);
+    s_siren1 = loadSound('audios/siren_1.mp3');
+    s_siren2 = loadSound('audios/siren_2.mp3');
+    s_shaky = loadSound('audios/shaky.mp3');
     player = new User();
 }
 let didSetup = false;
@@ -49,7 +100,7 @@ function mysetup() {
     textSize(40);
     textStyle(BOLD);
     fill(255, 211, 0);
-    text('YOU DIED!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+    //text('YOU DIED!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
     //doLoop = false;
 }
 function setup() {
@@ -57,7 +108,7 @@ function setup() {
     frameRate(48);
     mysetup();
 }
-
+let munch=1;
 function draw() {
     if (!doLoop) {
         return;
@@ -108,9 +159,14 @@ function draw() {
                 if (pacman.speed > ghost.warnlevel) {
                     // Ghost dies
                     //console.log("ghost");
+                    s_eatghost.play();
+                    s_retreat.play();
+                    player.addScore(200);
                     ghost.setupGhost();
                 } else {
                     // pacman dies
+                    // stop all sounds
+                    stop_all_sounds();
                     pacman.death = true;
                     pacman.die();
                 }
@@ -125,17 +181,38 @@ function draw() {
                 pacman.medlevel += 6;
                 player.addScore(100);
                 pacman.speed += 2;
+                if (!s_power.isLooping()) {
+                    s_power.loop();
+                } 
+                s_siren1.stop();
+                if (!s_siren2.isLooping()) {
+                    //s_siren2.loop();
+                }
             }
             // terrain.terrain[i][j] = new Cell(false, false, element.x, element.y);
             terrain.setcellatxy(pacman.pos.x, pacman.pos.y, ' ');
             terrain.nFood--;
             player.addScore(10);
-            pacman.medlevel += 10;
+            pacman.medlevel += 7;
+            s_munch12.play();
+            //s_munch2.play();
+            //if (munch==1) { s_munch1.play(); s_munch2.play(); munch=2; } else { s_munch2.play(); munch=1; }
+
+            //s_munch1.play();
+            //if (s_munch1.isPlaying()) {
+              //  s_munch2.play();
+            //} else {
+            //    s_munch1.play();
+            ///}
             //terrain.showall();//(i,j);
         }
 
 
         //terrain.showall();//(i,j);
+        if (oneLoop) {
+            oneLoop = false;
+            doLoop = false;
+        }
 
         if (count == 0) {
             if (startButton) return;
@@ -144,32 +221,51 @@ function draw() {
             textStyle(BOLD);
             fill(255, 211, 0);
             //console.log("showing start");
-            showStartButton("Press ENTER to begin",
-                () => {
-                    //setup();
-                    doLoop = true;
-                    count = 0;
-                    spawn = true;
-                    removeElements();
-                }
-            );
+
+            // hhh 
             doLoop = false;
         }
-
 
     }
 
 
 }
 
+
+
+function hhh() {
+    doLoop=true;
+    oneLoop = true;
+    showStartButton("Press ENTER to begin",
+        () => {
+            doLoop = false;
+            s_intro.play();
+            window.setTimeout(() => {
+                doLoop = true;
+                count = 0;
+                spawn = true;
+                removeElements();
+                s_intro.stop();
+                s_siren1.stop();
+                s_siren2.stop();
+                s_siren1.loop();
+                s_shaky.setVolume(pacman.trem());
+                s_shaky.loop();
+            }, 5000);
+        }
+    );
+}
+
+
+
 function keyPressed() {
     //console.log(keyCode);
-    if (keyCode == 32) {
+    if (keyCode == 32 && !startButton) {
         doLoop = !doLoop;
         if (!doLoop) {
             showStartButton("Press SPACE to continue",
                 () => {
-                    doLoop = true;
+                    doLoop = false;
                     removeElements();
                 }
             );
