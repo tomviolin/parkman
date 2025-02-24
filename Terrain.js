@@ -312,7 +312,7 @@ class Terrain {
 
   setcellatxy(x, y, achar) {
     let cc = this.cell_pix2ij(x, y);
-    console.log(`setcellatxy(${x},${y},${achar}) => cell_ij2pix(${cc.i},${cc.j})`);
+    //console.log(`setcellatxy(${x},${y},${achar}) => cell_ij2pix(${cc.i},${cc.j})`);
     this.cells[cc.i] = this.cells[cc.i].substring(0, cc.j) + achar + this.cells[cc.i].substring(cc.j + 1);
   }
 

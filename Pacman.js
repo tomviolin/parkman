@@ -32,7 +32,7 @@ class Pacman {
         this.deathStage = 0;
         //if open is 0, the mouth is fully opened,
         //if it's 2, the mouth is semi closed
-        this.medlevel = 50;
+        this.medlevel = 250;
         this.lastmedcalc = Date.now();
         //variabili per lo spostamento in english: variables for movement
         this.commands = [];

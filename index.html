@@ -16,7 +16,22 @@
     <script src="Cell.js"></script>
     <script src="Pacman.js"></script>
     <script src="Ghost.js"></script>
-    
+<style>
+    button.hot {
+        z-index: 100;
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        font-size: 50px; 
+        font-weight: bold; 
+        white-space: nowrap; 
+        position: absolute; 
+        bottom:50%; 
+        left:50%; 
+        transform: translate(-50%,-50%);
+    }
+
+</style>    
 </body>
 <script>
     window.buttonCallback = null;
@@ -26,6 +41,7 @@
         range.selectNode(document.body); // Required for the range to work in all browsers
         return range.createContextualFragment(htmlString).firstChild;
     }
+/*
     function buttonPressedCallback() {
         startButton.remove();
         var cvas = document.getElementsByTagName("canvas")[0];
@@ -40,31 +56,6 @@
             buttonCallback();
         }
     }
-    function showStartButton(message, callback) {
-        buttonCallback = callback;
-        const htmlString = `
-        <button style='
-            z-index: 100;
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            font-size: 50px; 
-            font-weight: bold; 
-            white-space: nowrap; 
-            position: absolute; 
-            bottom:50%; 
-            left:50%; 
-            transform: translate(-50%,-50%);' 
-            onclick='buttonPressedCallback()'>
-            ${message}
-        </button>`;
-        var ddiv = document.createElement("div");
-        ddiv.innerHTML = htmlString;
-        startButton = ddiv.firstElementChild;
-        console.log(startButton);
-        // Create a button to restart the game
-        document.body.appendChild(startButton);
-        startButton.focus();
-    }
+       */
 </script>
 </html>

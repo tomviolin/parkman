@@ -171,6 +171,7 @@ class Ghost {
                 s_siren1.stop();
                 s_siren2.stop();
                 s_siren1.loop();
+                spawn = true;
             }
             this.panicFlag = 0;
         }

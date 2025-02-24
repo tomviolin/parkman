@@ -17,13 +17,13 @@ String.prototype.replaceAt = function (index, replacement) {
     return this.substring(0, index) + replacement + this.substring(index + replacement.length);
 }
 
-let s_munch1=null,
-    s_munch2 =null,
+let s_munch1 = null,
+    s_munch2 = null,
     s_munch12 = null,
-    s_death = null, 
+    s_death = null,
     s_power = null,
-    s_eatghost=null,
-    s_retreat=null,
+    s_eatghost = null,
+    s_retreat = null,
     s_intro = null,
     s_siren1 = null,
     s_siren2 = null,
@@ -32,15 +32,68 @@ let pacman, terrain, player, rb;
 let doLoop = false;
 let oneLoop = false;
 let startButton = false;
+let startButtonCallback = startButtonCallbackStub;
+let startButtonElementParent = null;
+/*
+function showStartButton(message, callback) {
+    buttonCallback = callback;
+    const htmlString = `
+    <button style='
+        z-index: 100;
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        font-size: 50px; 
+        font-weight: bold; 
+        white-space: nowrap; 
+        position: absolute; 
+        bottom:50%; 
+        left:50%; 
+        transform: translate(-50%,-50%);' 
+        onclick='buttonPressedCallback()'>
+        ${message}
+    </button>`;
+    var ddiv = document.createElement("div");
+    ddiv.innerHTML = htmlString;
+    startButton = ddiv.firstElementChild;
+    //console.log(startButton);
+    // Create a button to restart the game
+    document.body.appendChild(startButton);
+    startButton.focus();
+
+   } */
 function showStartButton(text, callback) {
     startButton = true;
-    let sb = createButton(text);
-    sb.position(CANVAS_WIDTH / 2 - 100, CANVAS_HEIGHT / 2);
-    sb.mousePressed(() => {
+    startButtonElementParent = createButton(text);
+    //console.log(startButtonElementParent);
+    //sb.position(CANVAS_WIDTH / 2 - 100, CANVAS_HEIGHT / 2);
+    startButtonElementParent.mousePressed(() => {
+        userStartAudio();
         callback();
     });
-    
+    startButtonElementParent.touchStarted(() => {
+        userStartAudio();
+        callback();
+    });
+    startButtonCallback = () => {
+        //console.log("startButtonCallback() called!");
+        userStartAudio();
+        callback();
+    }
+    startButtonElementParent.elt.setAttribute("class","hot");
+    //sb.center();        
+    startButtonElementParent.elt.focus();
+    startButtonElementParent.elt.class="startButton";
 }
+
+
+function startButtonCallbackStub() {
+    //console.log("startButtonCallback stub");
+}
+
+
+
+
 
 function stop_all_sounds() {
     s_munch1.stop();
@@ -81,18 +134,19 @@ function mysetup() {
         createCanvas(CANVAS_WIDTH, CANVAS_REAL_HEIGHT);
         terrain = new Terrain();
         rb = createButton('restart game');
-        rb.position(0,0);
+        rb.position(0, 0);
         rb.mousePressed(() => {
+            userStartAudio();
             document.location.reload();
         });
-    
+
         didSetup = true;
     }
     ghosts.push(new Ghost(0, 6, 12.5 * cellWidth, 14.5 * cellHeight));
     ghosts.push(new Ghost(0, 8, 13.5 * cellWidth, 14.5 * cellHeight));
     ghosts.push(new Ghost(8, 8, 14.5 * cellWidth, 14.5 * cellHeight));
     ghosts.push(new Ghost(0, 9, 15.5 * cellWidth, 14.5 * cellHeight));
-    pacman = new Pacman(23,14);
+    pacman = new Pacman(23, 14);
     spawn = false;
     count = 0;
     doLoop = true;
@@ -108,7 +162,7 @@ function setup() {
     frameRate(48);
     mysetup();
 }
-let munch=1;
+let munch = 1;
 function draw() {
     if (!doLoop) {
         return;
@@ -183,7 +237,7 @@ function draw() {
                 pacman.speed += 2;
                 if (!s_power.isLooping()) {
                     s_power.loop();
-                } 
+                }
                 s_siren1.stop();
                 if (!s_siren2.isLooping()) {
                     //s_siren2.loop();
@@ -200,7 +254,7 @@ function draw() {
 
             //s_munch1.play();
             //if (s_munch1.isPlaying()) {
-              //  s_munch2.play();
+            //  s_munch2.play();
             //} else {
             //    s_munch1.play();
             ///}
@@ -234,16 +288,24 @@ function draw() {
 
 
 function hhh() {
-    doLoop=true;
+    doLoop = true;
     oneLoop = true;
     showStartButton("Press ENTER to begin",
         () => {
+            if (startButtonElementParent) {
+                startButtonElementParent.elt.remove()
+                startButtonElementParent = null;
+            };
             doLoop = false;
             s_intro.play();
             window.setTimeout(() => {
                 doLoop = true;
                 count = 0;
                 spawn = true;
+                if (startButtonElementParent) {
+                    startButtonElementParent.elt.remove()
+                    startButtonElementParent = null;
+                };
                 removeElements();
                 s_intro.stop();
                 s_siren1.stop();
@@ -251,6 +313,10 @@ function hhh() {
                 s_siren1.loop();
                 s_shaky.setVolume(pacman.trem());
                 s_shaky.loop();
+                startButton = false;
+                startButtonCallback = startButtonCallbackStub;
+                pacman.medlevel = 100;
+                //console.log("startButtonCallback = startButtonCallbackStub;");
             }, 5000);
         }
     );
@@ -259,17 +325,26 @@ function hhh() {
 
 
 function keyPressed() {
+    userStartAudio();
     //console.log(keyCode);
-    if (keyCode == 32 && !startButton) {
+    if (keyCode == 32) {
         doLoop = !doLoop;
         if (!doLoop) {
             showStartButton("Press SPACE to continue",
                 () => {
                     doLoop = false;
+                    if (startButtonElementParent) {
+                        startButtonElementParent.elt.remove()
+                        startButtonElementParent = null;
+                    }
                     removeElements();
                 }
             );
         } else {
+            if (startButtonElementParent) {
+                startButtonElementParent.elt.remove()
+                startButtonElementParent = null;
+            }
             removeElements();
             pacman.unfreeze();
         }
@@ -278,9 +353,9 @@ function keyPressed() {
         pacman.addInstruction(1, 0);
     } else if (keyCode === LEFT_ARROW || key === 'a' || key === 'A' || key === 'h' || key === 'H') {
         pacman.addInstruction(-1, 0);
-    } else if (keyCode === UP_ARROW || key === 'w' || key === 'W' || key === 'k' || key === 'K') { 
+    } else if (keyCode === UP_ARROW || key === 'w' || key === 'W' || key === 'k' || key === 'K') {
         pacman.addInstruction(0, -1);
-    } else if (keyCode === DOWN_ARROW || key === 's' || key === 'S'  || key === 'j' || key === 'J') { 
+    } else if (keyCode === DOWN_ARROW || key === 's' || key === 'S' || key === 'j' || key === 'J') {
         pacman.addInstruction(0, 1);
     } else if (keyCode === ENTER && pacman.death && player.lives >= 0) {
         setup();
@@ -293,3 +368,47 @@ function keyPressed() {
         pacman.medlevel = 100;
     }
 }
+
+let startX, startY, endX, endY;
+function touchStarted() {
+    userStartAudio();
+    startX = mouseX;
+    startY = mouseY;
+    if (startButton) {
+        //console.log("startButtonCallback();");
+        startButtonCallback();
+    }
+    return false; // Prevent default behavior
+}
+
+function touchEnded() {
+    userStartAudio();
+    endX = mouseX;
+    endY = mouseY;
+    handleSwipe();
+    return false; // Prevent default behavior
+}
+
+function handleSwipe() {
+    let deltaX = endX - startX;
+    let deltaY = endY - startY;
+
+    if (abs(deltaX) > abs(deltaY)) {
+        if (deltaX > 0) {
+            //console.log("Swiped Right");
+            pacman.addInstruction(1, 0);
+        } else {
+            //console.log("Swiped Left");
+            pacman.addInstruction(-1, 0);
+        }
+    } else {
+        if (deltaY > 0) {
+            //console.log("Swiped Down");
+            pacman.addInstruction(0, 1);
+        } else {
+            pacman.addInstruction(0, -1);
+            //console.log("Swiped Up");
+        }
+    }
+}
+
