@@ -17,6 +17,8 @@ String.prototype.replaceAt = function (index, replacement) {
     return this.substring(0, index) + replacement + this.substring(index + replacement.length);
 }
 
+document.addEventListener('touchstart', {});
+
 let s_munch1 = null,
     s_munch2 = null,
     s_munch12 = null,
