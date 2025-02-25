@@ -123,6 +123,7 @@ function preload() {
     s_eatghost = loadSound('audios/eat_ghost.mp3');
     s_retreat = loadSound('audios/retreating.mp3');
     s_intro = loadSound('audios/game_start.mp3', hhh);
+    s_intermission = loadSound('audios/intermission.mp3');
     s_siren1 = loadSound('audios/siren_1.mp3');
     s_siren2 = loadSound('audios/siren_2.mp3');
     s_shaky = loadSound('audios/shaky.mp3');
@@ -189,6 +190,7 @@ function draw() {
         textStyle(BOLD);
         fill(255, 211, 0);
         text('YOU HAVE WON!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+        stop_all_sounds();
     } else {
 
         if (spawn) {
@@ -308,7 +310,6 @@ function hhh() {
                     startButtonElementParent.elt.remove()
                     startButtonElementParent = null;
                 };
-                removeElements();
                 s_intro.stop();
                 s_siren1.stop();
                 s_siren2.stop();
@@ -339,7 +340,6 @@ function keyPressed() {
                         startButtonElementParent.elt.remove()
                         startButtonElementParent = null;
                     }
-                    removeElements();
                 }
             );
         } else {
@@ -347,7 +347,6 @@ function keyPressed() {
                 startButtonElementParent.elt.remove()
                 startButtonElementParent = null;
             }
-            removeElements();
             pacman.unfreeze();
         }
     }

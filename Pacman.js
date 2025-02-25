@@ -278,6 +278,7 @@ class Pacman {
                 imgWidth * xIndex, imgHeight * this.imgIndex.y, imgWidth, imgHeight);
             if (this.deathStage >= 11) {
                 doLoop = false;
+                stop_all_sounds();
                 textAlign(CENTER);
                 textSize(40);
                 textStyle(BOLD);
@@ -289,11 +290,28 @@ class Pacman {
                 }
                 ghosts = [];
                 textSize(30);
-                if (player.lives >= 0) {
-                    showStartButton('press enter for next life',()=>{document.location.reload();});// CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50);
-                } else {
+                if (player.lives == 0) {
                     showStartButton('***GAME OVER*** press enter to reset',()=>{document.location.reload();});
-                    //  text('***GAME OVER*** press enter to reset', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50);
+                } else if (player.lives == 2) {
+                    s_intermission.play();
+                    window.setTimeout(() => {
+                        s_intermission.stop();
+                    }, 10000);
+                    showStartButton('press enter for next life',()=>{
+                        startButtonElementParent.elt.remove();
+                        pacman.unfreeze();
+                        count = 0
+                        spawn=true;
+                        doLoop = true;
+                    });
+                } else {
+                    showStartButton('press enter for next life',()=>{
+                        startButtonElementParent.elt.remove();
+                        pacman.unfreeze();
+                        count = 0
+                        spawn=true;
+                        doLoop = true;
+                    });
                 }
             }
         }
