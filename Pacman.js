@@ -268,17 +268,19 @@ class Pacman {
             this.deathStage = 1;
         }
         var now = Date.now();
-        if (now - this.lastmove > 1000 / 6) {
+        if (now - this.lastmove > 1000 / 9) {
             this.lastmove = now;
             this.deathStage += 1;
         } else {
             this.imgIndex.y = 7;
             this.imgIndex.x = 4;
-            let xIndex = this.imgIndex.x + this.deathStage;
+            let doffset = this.deathStage;
+            if (doffset > 12) doffset = 12;
+            let xIndex = this.imgIndex.x + doffset;
             imageMode(CENTER);
             image(sheetImage, this.pos.x + cellWidth / 2 - imgWidth / 2, this.pos.y + cellHeight / 2 - imgHeight / 2, this.r * 2.5, this.r * 2.5,
                 imgWidth * xIndex, imgHeight * this.imgIndex.y, imgWidth, imgHeight);
-            if (this.deathStage >= 11) {
+            if (this.deathStage >= 14) {
                 doLoop = false;
                 stop_all_sounds();
                 textAlign(CENTER);
