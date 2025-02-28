@@ -1,11 +1,24 @@
-const CANVAS_HEIGHT = 620,
-    CANVAS_WIDTH = 560,
-    CANVAS_REAL_HEIGHT = CANVAS_HEIGHT + 30;
-cellWidth = CANVAS_WIDTH / 28,
-    cellHeight = CANVAS_HEIGHT / 31; //cellWidth && cellHeight = 20
+const cellWidth = 20;
+const cellHeight = 20;
+
+let CANVAS_WIDTH;
+let CANVAS_HEIGHT;
+let CANVAS_REAL_HEIGHT;
+let CANVAS_PLAYERBAR_HEIGHT = 30;
+
+
+
+//const CANVAS_HEIGHT = 620,
+ //   CANVAS_WIDTH = 560,
+ //   CANVAS_REAL_HEIGHT = CANVAS_HEIGHT + 30;
+//cellWidth = CANVAS_WIDTH / 28,
+//    cellHeight = CANVAS_HEIGHT / 31; //cellWidth && cellHeight = 20
+
+
 let ghosts = [],
     spawn, count;
 
+// sprite sheet
 let SheetWidth = 384,
     SheetHeight = 240,
     cols = 16,
@@ -13,6 +26,7 @@ let SheetWidth = 384,
     imgWidth = Math.floor(SheetWidth / cols),
     imgHeight = Math.floor(SheetHeight / rows);
 
+// this facilitates setting individual cells in the terrain
 String.prototype.replaceAt = function (index, replacement) {
     return this.substring(0, index) + replacement + this.substring(index + replacement.length);
 }
@@ -30,6 +44,13 @@ let s_munch1 = null,
     s_siren1 = null,
     s_siren2 = null,
     s_shaky = null;
+    s_steer_righ = null,
+    s_steer_left = null,
+    s_steer_up = null,
+    s_steer_down = null;
+
+
+
 let pacman, terrain, player, rb;
 let doLoop = false;
 let oneLoop = false;
@@ -69,6 +90,17 @@ function showStartButton(text, callback) {
     startButtonElementParent = createButton(text);
     //console.log(startButtonElementParent);
     //sb.position(CANVAS_WIDTH / 2 - 100, CANVAS_HEIGHT / 2);
+    startButtonElementParent.elt.addEventListener('click', () => {
+        console.log("startButtonElementParent clicked");
+        userStartAudio();
+        callback();
+    });
+    startButtonElementParent.elt.addEventListener('keydown', (e) => { 
+        console.log(`startButtonElementParent keydown ${e.key}`);
+        userStartAudio();
+        callback();
+        return false;
+    });
     startButtonElementParent.mousePressed(() => {
         userStartAudio();
         callback();
@@ -77,6 +109,7 @@ function showStartButton(text, callback) {
         userStartAudio();
         callback();
     });
+
     startButtonCallback = () => {
         //console.log("startButtonCallback() called!");
         userStartAudio();
@@ -98,35 +131,38 @@ function startButtonCallbackStub() {
 
 
 function stop_all_sounds() {
-    s_munch1.stop();
-    s_munch2.stop();
-    s_munch12.stop();
-    s_power.stop();
-    s_eatghost.stop();
-    s_retreat.stop();
-    s_intro.stop();
-    s_siren1.stop();
-    s_siren2.stop();
-    s_shaky.stop();
+    for (let sound of allSounds) {
+        sound.stop();
+    }
 }
 
 
 
 //
 function preload() {
+    // load the sprite sheet
     sheetImage = loadImage('PacManSheet.png');
-    s_munch1 = loadSound('audios/munch_1.mp3');
-    s_munch2 = loadSound('audios/munch_2.mp3');
-    s_munch12 = loadSound('audios/munch_1_2.mp3');
-    s_death = loadSound('audios/pacman_death.mp3');
-    s_power = loadSound('audios/power_pellet.mp3');
-    s_eatghost = loadSound('audios/eat_ghost.mp3');
-    s_retreat = loadSound('audios/retreating.mp3');
-    s_intro = loadSound('audios/game_start.mp3', hhh);
-    s_intermission = loadSound('audios/intermission.mp3');
-    s_siren1 = loadSound('audios/siren_1.mp3');
-    s_siren2 = loadSound('audios/siren_2.mp3');
-    s_shaky = loadSound('audios/shaky.mp3');
+    // load the sounds
+    allSounds = [
+        s_munch1 = loadSound('audios/munch_1.mp3'),
+        s_munch2 = loadSound('audios/munch_2.mp3'),
+        s_munch12 = loadSound('audios/munch_1_2.mp3'),
+        s_death = loadSound('audios/pacman_death4.mp3'),
+        s_power = loadSound('audios/power_pellet.mp3'),
+        s_eatghost = loadSound('audios/eat_ghost.mp3'),
+        s_retreat = loadSound('audios/retreating.mp3'),
+        s_intro = loadSound('audios/game_start.mp3'),
+        s_intermission = loadSound('audios/intermission.mp3'),
+        s_siren1 = loadSound('audios/siren_1.mp3'),
+        s_siren2 = loadSound('audios/siren_2.mp3'),
+        s_shaky = loadSound('audios/shaky.mp3'),
+        s_steer_righ = loadSound('audios/steer_righ.mp3'),
+        s_steer_left = loadSound('audios/steer_left.mp3'),
+        s_steer_up = loadSound('audios/steer_up.mp3'),
+        s_steer_down = loadSound('audios/steer_down.mp3')
+    ];
+    terrain = new Terrain();
+    pacman = new Pacman(terrain.pacmanStart.i, terrain.pacmanStart.j);
     player = new User();
 }
 let didSetup = false;
@@ -134,8 +170,9 @@ let didSetup = false;
 function mysetup() {
     let didDidSetup = didSetup;
     if (!didSetup) {
+        console.log(`screen.width = ${screen.width}, screen.height = ${screen.height}`);
+        //createCanvas(screen.width, screen.height);
         createCanvas(CANVAS_WIDTH, CANVAS_REAL_HEIGHT);
-        terrain = new Terrain();
         rb = createButton('restart game');
         rb.position(0, 0);
         rb.mousePressed(() => {
@@ -162,10 +199,13 @@ function mysetup() {
 }
 function setup() {
     imageMode(CENTER);
-    frameRate(48);
+    frameRate(120);
     mysetup();
 }
 let munch = 1;
+
+let firstDraw = true;
+
 function draw() {
     if (!doLoop) {
         return;
@@ -209,9 +249,13 @@ function draw() {
             pacman.die();
         else
             pacman.show();
-        pacman.move();
+        if (!firstDraw) {
+            pacman.move();
+        }
         for (let ghost of ghosts) {
-            ghost.move();
+            if (!firstDraw) {
+                ghost.move();
+            }
             ghost.show();
             if (pacman.hits(ghost)) {
                 if (pacman.speed > ghost.warnlevel) {
@@ -220,6 +264,7 @@ function draw() {
                     s_eatghost.play();
                     s_retreat.play();
                     player.addScore(200);
+                    pacman.medlevel += 10;
                     ghost.setupGhost();
                 } else {
                     // pacman dies
@@ -251,7 +296,7 @@ function draw() {
             terrain.setcellatxy(pacman.pos.x, pacman.pos.y, ' ');
             terrain.nFood--;
             player.addScore(10);
-            pacman.medlevel += 7;
+            pacman.medlevel += 5;
             s_munch12.play();
             //s_munch2.play();
             //if (munch==1) { s_munch1.play(); s_munch2.play(); munch=2; } else { s_munch2.play(); munch=1; }
@@ -271,17 +316,12 @@ function draw() {
             oneLoop = false;
             doLoop = false;
         }
-
-        if (count == 0) {
+        if (firstDraw) {
+            firstDraw = false;
             if (startButton) return;
-            textAlign(CENTER);
-            textSize(60);
-            textStyle(BOLD);
-            fill(255, 211, 0);
-            //console.log("showing start");
-
-            // hhh 
+            hhh();
             doLoop = false;
+            oneLoop = false;
         }
 
     }
@@ -292,8 +332,8 @@ function draw() {
 
 
 function hhh() {
-    doLoop = true;
-    oneLoop = true;
+    doLoop = false;
+    oneLoop = false;
     showStartButton("Press ENTER to begin",
         () => {
             if (startButtonElementParent) {
@@ -301,8 +341,9 @@ function hhh() {
                 startButtonElementParent = null;
             };
             doLoop = false;
-            s_intro.play();
-            window.setTimeout(() => {
+            s_intro.stop();
+            s_intro.onended(() => {
+                s_intro.clearCues();
                 doLoop = true;
                 count = 0;
                 spawn = true;
@@ -310,17 +351,23 @@ function hhh() {
                     startButtonElementParent.elt.remove()
                     startButtonElementParent = null;
                 };
-                s_intro.stop();
-                s_siren1.stop();
-                s_siren2.stop();
+                stop_all_sounds();
                 s_siren1.loop();
                 s_shaky.setVolume(pacman.trem());
                 s_shaky.loop();
+
                 startButton = false;
                 startButtonCallback = startButtonCallbackStub;
                 pacman.medlevel = 100;
+                pacman.unfreeze();
+                doLoop =  true;
+                count=0;
+
                 //console.log("startButtonCallback = startButtonCallbackStub;");
-            }, 5000);
+            });
+            doLoop=false;
+            s_intro.play();
+
         }
     );
 }
@@ -331,8 +378,12 @@ function keyPressed() {
     userStartAudio();
     //console.log(keyCode);
     if (keyCode == 32) {
+        if (startButton && !doLoop) {
+            return;
+        }
         doLoop = !doLoop;
         if (!doLoop) {
+            stop_all_sounds();
             showStartButton("Press SPACE to continue",
                 () => {
                     doLoop = false;
@@ -397,16 +448,20 @@ function handleSwipe() {
     if (abs(deltaX) > abs(deltaY)) {
         if (deltaX > 0) {
             //console.log("Swiped Right");
+            s_steer_righ.play();
             pacman.addInstruction(1, 0);
         } else {
             //console.log("Swiped Left");
+            s_steer_left.play();
             pacman.addInstruction(-1, 0);
         }
     } else {
         if (deltaY > 0) {
             //console.log("Swiped Down");
+            s_steer_down.play();
             pacman.addInstruction(0, 1);
         } else {
+            s_steer_up.play();
             pacman.addInstruction(0, -1);
             //console.log("Swiped Up");
         }

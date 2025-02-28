@@ -14,7 +14,7 @@ class Pacman {
         //in english: position in the canvas
         this.speed = 1;
 
-        this.count = 0;
+        //this.count = 0;
 
         //posizione nella griglia // in english: position in the grid
         //indici nell'immagine sheet  in eglish: indices in the image sheet
@@ -24,7 +24,7 @@ class Pacman {
         this.pos = terrain.cell_ij2pix(i, j);
         this.pos = createVector(this.pos.x + cellWidth / 2, this.pos.y + cellHeight / 2);
         //direzione
-        this.dir = createVector(0, 0);
+        this.dir = createVector(1, 0);
         //variabili per animare la morte di PacMan 
         //   in englsh: variables to animate PacMan's death
         this.open = 0;
@@ -45,7 +45,7 @@ class Pacman {
     trem() {
         let thistime = Date.now();
         let timesince = thistime - this.lastmedcalc;
-        let thislevel = this.medlevel * Math.exp(-timesince * 0.0005);
+        let thislevel = this.medlevel * Math.exp(-timesince * 0.0002);
         if (timesince > 1000) {
             this.medlevel = thislevel;
             this.lastmedcalc = thistime;
@@ -223,7 +223,7 @@ class Pacman {
             // must center x onto grid
             this.pos.x = Math.floor(this.pos.x / cellWidth) * cellWidth + cellWidth / 2;
         }
-        this.speed = (this.speed-1)*0.9940  + 1;
+        this.speed = (this.speed-1)*0.990  + 1;
     }
 
  
@@ -263,10 +263,12 @@ class Pacman {
     die() {
         if (this.deathStage == 0) {
             stop_all_sounds();
+            s_death.setVolume(0.25);
             s_death.play();
+            this.deathStage = 1;
         }
         var now = Date.now();
-        if (now - this.lastmove > 1000 / 10) {
+        if (now - this.lastmove > 1000 / 6) {
             this.lastmove = now;
             this.deathStage += 1;
         } else {

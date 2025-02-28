@@ -79,7 +79,7 @@ class Terrain {
       "#..........................#",
       "#.####.#####.##.#...#.####.#",
       "#o####.#####.##.##.##.####o#",
-      "#...##........ .......##...#",
+      "#...##........>.......##...#",
       "###.##.##.########.##.##.###",
       "###.##.##.########.##.##.###",
       "#......##....##....##......#",
@@ -93,12 +93,18 @@ class Terrain {
     this.jmax = this.cells[0].length - 1;
     this.imax = this.cells.length - 1;
 
+    CANVAS_WIDTH = (this.jmax + 1) * cellWidth;
+    CANVAS_HEIGHT = (this.imax + 1) * cellHeight;
+    CANVAS_REAL_HEIGHT = CANVAS_HEIGHT + CANVAS_PLAYERBAR_HEIGHT;
+    console.log(`CANVAS_WIDTH=${CANVAS_WIDTH}, CANVAS_HEIGHT=${CANVAS_HEIGHT}, CANVAS_REAL_HEIGHT=${CANVAS_REAL_HEIGHT}`);
     this.nFood = 0;
-
+    this.pacmanStart = { i: 0, j: 0 };
     for (let i = this.imin; i < this.imax; i++) {
       for (let j = this.jmin; j < this.jmax; j++) {
         if (this.foodatcell(i, j)) {
           this.nFood++;
+        } else if (this.charAtCell(i, j) == '>') {
+          this.pacmanStart = { i: i, j: j };
         }
       }
     }
@@ -140,6 +146,12 @@ class Terrain {
   poweratpix(x, y) {
     let cc = this.cell_pix2ij(x, y);
     return this.poweratcell(cc.i, cc.j);
+  }
+
+  charAtCell(ip, jp) {
+    let i = (ip - this.imin) % (this.imax - this.imin + 1) + this.imin;
+    let j = (jp - this.jmin) % (this.jmax - this.jmin + 1) + this.jmin;
+    return this.cells[i][j];
   }
 
   radiusatcell(ip, jp) {
@@ -298,6 +310,7 @@ class Terrain {
     }
   }
   showall() {
+    console.log(`this.cells.length=${this.cells.length}, this.cells[0].length=${this.cells[0].length}`);
     for (let i = 0; i < this.cells.length; i++) {
       for (let j = 0; j < this.cells[i].length; j++) {
         this.showcellij(i, j);
