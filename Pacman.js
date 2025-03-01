@@ -18,7 +18,7 @@ class Pacman {
 
         //posizione nella griglia // in english: position in the grid
         //indici nell'immagine sheet  in eglish: indices in the image sheet
-        this.imgIndex = createVector(4, 3);
+        this.imgIndex = createVector(3, 0);
         //raggio
         this.r = cellWidth / 2.01;
         this.pos = terrain.cell_ij2pix(i, j);
@@ -58,24 +58,30 @@ class Pacman {
     //questo metodo mostra PacMan sullo schermo 
     //   in english: this method shows PacMan on the screen
     show() {
-        s_shaky.setVolume(this.trem()*0.5);
+        s_shaky.setVolume(this.trem()*0.1);
         let k = exp(-this.trem()*0.09);
         s_siren1.setVolume(k);
         this.changeMouth();
         fill(255);
+        this.imgIndex.x = 1 - this.open/2;
         if (this.dir.x > 0) {
-            this.imgIndex.x = 4 + this.open;
+            // right
+            this.imgIndex.y = 1;
+
         } else if (this.dir.x < 0) {
-            this.imgIndex.x = 0 + this.open;
+            // left
+            this.imgIndex.y = 0;
         } else if (this.dir.y > 0) {
-            this.imgIndex.x = 5 + this.open;
+            // down
+            this.imgIndex.y = 3;
         } else if (this.dir.y < 0) {
-            this.imgIndex.x = 1 + this.open;
+            // up
+            this.imgIndex.y = 2;
         }
         imageMode(CENTER);
         image(sheetImage, this.pos.x+(random(1)-0.5)*this.trem()*3,//+ cellWidth/2, 
             this.pos.y+(random(1)-0.5) * this.trem()*3,//+ cellHeight/2, 
-            this.r * 2.5, this.r * 2.5,
+            this.r * 3.5, this.r * 3.5,
             imgWidth * this.imgIndex.x, imgHeight * this.imgIndex.y, imgWidth, imgHeight);
     }
     unfreeze() {
@@ -272,13 +278,16 @@ class Pacman {
             this.lastmove = now;
             this.deathStage += 1;
         } else {
-            this.imgIndex.y = 7;
-            this.imgIndex.x = 4;
+            this.imgIndex.y = 12;
+            this.imgIndex.x = 0;
             let doffset = this.deathStage;
             if (doffset > 12) doffset = 12;
             let xIndex = this.imgIndex.x + doffset;
             imageMode(CENTER);
-            image(sheetImage, this.pos.x + cellWidth / 2 - imgWidth / 2, this.pos.y + cellHeight / 2 - imgHeight / 2, this.r * 2.5, this.r * 2.5,
+            image(sheetImage, 
+                this.pos.x + cellWidth / 2 - imgWidth / 2, 
+                this.pos.y + cellHeight / 2 - imgHeight / 2, 
+                this.r * 3.5, this.r * 3.5,
                 imgWidth * xIndex, imgHeight * this.imgIndex.y, imgWidth, imgHeight);
             if (this.deathStage >= 14) {
                 doLoop = false;

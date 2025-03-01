@@ -1,6 +1,7 @@
 
 class Terrain {
   constructor() {
+    this.wallsRendered = false;
     this.wba = {
       0b0000: "",
       0b0001: "line(0,0,0,-1);",
@@ -96,7 +97,7 @@ class Terrain {
     CANVAS_WIDTH = (this.jmax + 1) * cellWidth;
     CANVAS_HEIGHT = (this.imax + 1) * cellHeight;
     CANVAS_REAL_HEIGHT = CANVAS_HEIGHT + CANVAS_PLAYERBAR_HEIGHT;
-    console.log(`CANVAS_WIDTH=${CANVAS_WIDTH}, CANVAS_HEIGHT=${CANVAS_HEIGHT}, CANVAS_REAL_HEIGHT=${CANVAS_REAL_HEIGHT}`);
+    //console.log(`CANVAS_WIDTH=${CANVAS_WIDTH}, CANVAS_HEIGHT=${CANVAS_HEIGHT}, CANVAS_REAL_HEIGHT=${CANVAS_REAL_HEIGHT}`);
     this.nFood = 0;
     this.pacmanStart = { i: 0, j: 0 };
     for (let i = this.imin; i < this.imax; i++) {
@@ -120,6 +121,9 @@ class Terrain {
     }
   }
   wall(ip, jp) {
+    if (ip < this.imin || ip > this.imax || jp < this.jmin || jp > this.jmax) {
+      return true;
+    } 
     let i = (ip - this.imin) % (this.imax - this.imin + 1) + this.imin;
     let j = (jp - this.jmin) % (this.jmax - this.jmin + 1) + this.jmin;
     return this.wallatcell(i, j);
@@ -160,7 +164,7 @@ class Terrain {
     if (this.poweratcell(i, j)) {
       return cellWidth / 1.3;
     } else if (this.foodatcell(i, j)) {
-      return cellWidth / 4;
+      return cellWidth / 5;
     } else {
       return cellWidth / 4;
     }
@@ -300,7 +304,7 @@ class Terrain {
       }
       noFill();
       stroke(0, 108, 255);
-      strokeWeight(cellWidth * 0.03);
+      strokeWeight(cellWidth * 0.024);
       eval(doit);
       //rect(0,0,2,2);
       //console.log(doit);
@@ -310,10 +314,74 @@ class Terrain {
     }
   }
   showall() {
-    console.log(`this.cells.length=${this.cells.length}, this.cells[0].length=${this.cells[0].length}`);
+    //console.log(`this.cells.length=${this.cells.length}, this.cells[0].length=${this.cells[0].length}`);
+    if (!this.wallsRendered) {
+      for (let i = 0; i < this.cells.length; i++) {
+        for (let j = 0; j < this.cells[i].length; j++) {
+          if (this.cells[i][j] == "#") {
+            this.showcellij(i, j);
+          }
+        }
+      }
+      //bgGraphics = createGraphics(CANVAS_WIDTH, CANVAS_HEIGHT);
+      bgGraphics.background(0);
+      imageMode(CORNER);
+      bgGraphics.image(defaultCanvas, 0, 0);
+      imageMode(CENTER);
+      let im=cv.imread(bgGraphics.elt);
+
+
+      let src = im; //cv.imread('canvasInput');
+      let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+      cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
+      cv.GaussianBlur(src,src,new cv.Size(13,13),0.01);
+      //cv.threshold(src, src, 120, 200, cv.THRESH_BINARY);
+      let contours = new cv.MatVector();
+      let hierarchy = new cv.Mat();
+      // You can try more different parameters
+      cv.findContours(src, contours, hierarchy, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE);
+      // draw contours with random Scalar
+      for (let i = 0; i < contours.size(); ++i) {
+          let color = new cv.Scalar(0,64,255);
+          cv.drawContours(dst, contours, i, color, 2, cv.LINE_AA, hierarchy, 255);
+      }
+      //cv.imshow('canvasOutput', dst);
+      cv.imshow(bgGraphics.elt, dst);
+      this.wallsRendered = true;  
+      src.delete(); dst.delete(); contours.delete(); hierarchy.delete();
+      
+
+
+
+
+
+/*
+      cv.cvtColor(im,im,cv.COLOR_RGB2GRAY,0);
+      cv.GaussianBlur(im, im, new cv.Size(3, 3), 1.4);
+      im.mul(im,20); // increase contrast
+      cv.Canny(im,im, 100, 200, 7, false);
+      cv.GaussianBlur(im, im, new cv.Size(3, 3), 1.4)
+      im.mul(im,255); // increase contrast  
+      let zeroch = new cv.Mat(im.rows, im.cols, cv.CV_8UC1, new cv.Scalar(0, 0, 0));
+      let merged = new cv.MatVector(); //(im.rows, im.cols, cv.CV_8UC3);
+      merged.push_back(zeroch);
+      merged.push_back(im);
+      merged.push_back(im);
+      cv.merge(merged, im);
+      cv.imshow(bgGraphics.elt, im);
+      this.wallsRendered = true;  
+*/
+    } 
+    /*else {
+      let im = cv.imread(document.getElementById('offscreen'));
+      cv.imshow('defaultCanvas0', im);
+    }*/
+    image(bgGraphics, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
     for (let i = 0; i < this.cells.length; i++) {
       for (let j = 0; j < this.cells[i].length; j++) {
-        this.showcellij(i, j);
+        if (this.cells[i][j] != "#") {
+          this.showcellij(i, j);
+        }
       }
     }
   }

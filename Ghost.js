@@ -21,8 +21,8 @@ class Ghost {
         this.commands = []
         this.flag = 0;
         this.form = 0;
-    	this.paniclevel = 1.06;
-        this.warnlevel = 1.005;
+    	this.paniclevel = 1.08;
+        this.warnlevel = 1.01;
     }
 
     changeForm() {
@@ -148,17 +148,17 @@ class Ghost {
     	let yIndex = this.imgIndex.y;
         imageMode(CENTER);
 	    if (pacman.speed > this.paniclevel) {
-		    xIndex = 6;
-		    yIndex = 4;
+		    xIndex = 0;
+		    yIndex = 8;
             this.panicFlag = 2;
 	    } else if (pacman.speed > this.warnlevel) {
             pacman.count = 0;
             if (Date.now() % 1000 > 500) {
-                xIndex = 8;
-                yIndex = 4;
+                xIndex = 2;
+                yIndex = 8;
             } else {
-                xIndex = 6;
-                yIndex = 4;
+                xIndex = 0;
+                yIndex = 8;
             }
             this.panicFlag = 1;
         } else {
@@ -171,11 +171,12 @@ class Ghost {
                 s_siren1.stop();
                 s_siren2.stop();
                 s_siren1.loop();
+                s_shaky.loop();
                 spawn = true;
             }
             this.panicFlag = 0;
         }
-        image(sheetImage, this.pos.x, this.pos.y, this.r * 2.5, this.r * 2.5,
+        image(sheetImage, this.pos.x, this.pos.y, this.r * 3.5, this.r * 3.5,
             imgWidth * xIndex, imgHeight * yIndex, imgWidth, imgHeight);
     }
 

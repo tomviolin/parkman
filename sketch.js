@@ -7,7 +7,8 @@ let CANVAS_REAL_HEIGHT;
 let CANVAS_PLAYERBAR_HEIGHT = 30;
 
 
-
+let bgGraphics;
+let defaultCanvas;
 //const CANVAS_HEIGHT = 620,
  //   CANVAS_WIDTH = 560,
  //   CANVAS_REAL_HEIGHT = CANVAS_HEIGHT + 30;
@@ -31,10 +32,10 @@ let SheetWidth = 384,
 
 let SheetWidth = 786,
     SheetHeight = 280,
-    cols = 20,
-    rows = 20,
-    imgWidth = Math.floor(SheetWidth / cols),
-    imgHeight = Math.floor(SheetHeight / rows);
+    imgWidth = 20,
+    imgHeight = 20,
+    cols = Math.floor(SheetWidth / imgWidth),
+    rows = Math.floor(SheetHeight / imgHeight);
 
 
 
@@ -153,26 +154,31 @@ function stop_all_sounds() {
 //
 function preload() {
     // load the sprite sheet
-    sheetImage = loadImage('PacManSheet.png');
+    sheetImage = loadImage('spritesheet.png');
     // load the sounds
     allSounds = [
         s_munch1 = loadSound('audios/munch_1.mp3'),
         s_munch2 = loadSound('audios/munch_2.mp3'),
-        s_munch12 = loadSound('audios/munch_1_2.mp3'),
-        s_death = loadSound('audios/pac_death.mp3'),
-        s_power = loadSound('audios/power_pellet.mp3'),
-        s_eatghost = loadSound('audios/eat_ghost.mp3'),
-        s_retreat = loadSound('audios/retreating.mp3'),
-        s_intro = loadSound('audios/game_start.mp3'),
-        s_intermission = loadSound('audios/intermission.mp3'),
-        s_siren1 = loadSound('audios/siren_one.mp3'),
+        s_munch12 = loadSound('audios/munch_1_2_overdub.mp3'),
+        s_death = loadSound('audios/pac_death_overdub.mp3'),
+        s_power = loadSound('audios/power_pellet_overdub.mp3'),
+        s_eatghost = loadSound('audios/eat_ghost_overdub.mp3'),
+        s_retreat = loadSound('audios/retreating_overdub.mp3'),
+        s_intro = loadSound('audios/game_start_overdub.mp3'),
+        s_intermission = loadSound('audios/intermission_overdub.mp3'),
+        s_siren1 = loadSound('audios/siren_one_overdub.mp3'),
         s_siren2 = loadSound('audios/siren_2.mp3'),
-        s_shaky = loadSound('audios/shaky.mp3'),
+        s_shaky = loadSound('audios/shaky_overdub.mp3'),
         s_steer_righ = loadSound('audios/steer_righ.mp3'),
         s_steer_left = loadSound('audios/steer_left.mp3'),
         s_steer_up = loadSound('audios/steer_up.mp3'),
         s_steer_down = loadSound('audios/steer_down.mp3')
     ];
+    s_power.setVolume(0.5);
+    s_intro.setVolume(0.5);
+    s_munch12.setVolume(0.5);
+    s_eatghost.setVolume(2);
+    //s_retreat.setVolume(0.5);
     terrain = new Terrain();
     pacman = new Pacman(terrain.pacmanStart.i, terrain.pacmanStart.j);
     player = new User();
@@ -184,7 +190,12 @@ function mysetup() {
     if (!didSetup) {
         console.log(`screen.width = ${screen.width}, screen.height = ${screen.height}`);
         //createCanvas(screen.width, screen.height);
-        createCanvas(CANVAS_WIDTH, CANVAS_REAL_HEIGHT);
+        defaultCanvas = createCanvas(CANVAS_WIDTH, CANVAS_REAL_HEIGHT);
+        //c=document.getElementById("defaultCanvas0");
+        //c.style.position="absolute";
+        //c.style.transform="translate(-50%,-50%)";
+        bgGraphics = createGraphics(CANVAS_WIDTH, CANVAS_HEIGHT);
+        bgGraphics.background(0);
         rb = createButton('restart game');
         rb.position(0, 0);
         rb.mousePressed(() => {
@@ -194,10 +205,10 @@ function mysetup() {
 
         didSetup = true;
     }
-    ghosts.push(new Ghost(0, 6, 12.5 * cellWidth, 14.5 * cellHeight));
-    ghosts.push(new Ghost(0, 8, 13.5 * cellWidth, 14.5 * cellHeight));
-    ghosts.push(new Ghost(8, 8, 14.5 * cellWidth, 14.5 * cellHeight));
-    ghosts.push(new Ghost(0, 9, 15.5 * cellWidth, 14.5 * cellHeight));
+    ghosts.push(new Ghost(0, 4, 12.5 * cellWidth, 14.5 * cellHeight));
+    ghosts.push(new Ghost(0, 5, 13.5 * cellWidth, 14.5 * cellHeight));
+    ghosts.push(new Ghost(0, 6, 14.5 * cellWidth, 14.5 * cellHeight));
+    ghosts.push(new Ghost(0, 7, 15.5 * cellWidth, 14.5 * cellHeight));
     pacman = new Pacman(23, 14);
     spawn = false;
     count = 0;
@@ -365,7 +376,7 @@ function hhh() {
                 };
                 stop_all_sounds();
                 s_siren1.loop();
-                s_shaky.setVolume(pacman.trem());
+                s_shaky.setVolume(pacman.trem()*0.1);
                 s_shaky.loop();
 
                 startButton = false;
