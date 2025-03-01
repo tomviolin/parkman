@@ -19,12 +19,24 @@ let ghosts = [],
     spawn, count;
 
 // sprite sheet
+// old
+/*
 let SheetWidth = 384,
     SheetHeight = 240,
     cols = 16,
     rows = 10,
     imgWidth = Math.floor(SheetWidth / cols),
     imgHeight = Math.floor(SheetHeight / rows);
+*/
+
+let SheetWidth = 786,
+    SheetHeight = 280,
+    cols = 20,
+    rows = 20,
+    imgWidth = Math.floor(SheetWidth / cols),
+    imgHeight = Math.floor(SheetHeight / rows);
+
+
 
 // this facilitates setting individual cells in the terrain
 String.prototype.replaceAt = function (index, replacement) {
