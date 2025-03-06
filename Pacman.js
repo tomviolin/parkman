@@ -58,8 +58,8 @@ class Pacman {
     //questo metodo mostra PacMan sullo schermo 
     //   in english: this method shows PacMan on the screen
     show() {
-        s_shaky.setVolume(this.trem()*0.1);
-        let k = exp(-this.trem()*0.09);
+        s_shaky.setVolume(this.trem()*0.3);
+        let k = exp(-this.trem()*0.19);
         s_siren1.setVolume(k);
         this.changeMouth();
         fill(255);

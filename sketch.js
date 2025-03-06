@@ -376,7 +376,7 @@ function hhh() {
                 };
                 stop_all_sounds();
                 s_siren1.loop();
-                s_shaky.setVolume(pacman.trem()*0.1);
+                s_shaky.setVolume(pacman.trem()*0.3);
                 s_shaky.loop();
 
                 startButton = false;
