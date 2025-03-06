@@ -166,7 +166,7 @@ function preload() {
         s_retreat = loadSound('audios/retreating.mp3'),
         s_intro = loadSound('audios/game_start.mp3'),
         s_intermission = loadSound('audios/intermission.mp3'),
-        s_siren1 = loadSound('audios/siren_one.mp3'),
+        s_siren1 = loadSound('audios/siren_on.mp3'),
         s_siren2 = loadSound('audios/siren_2.mp3'),
         s_shaky = loadSound('audios/shaky.mp3'),
         s_steer_righ = loadSound('audios/steer_righ.mp3'),
