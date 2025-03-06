@@ -45,7 +45,7 @@ class Pacman {
     trem() {
         let thistime = Date.now();
         let timesince = thistime - this.lastmedcalc;
-        let thislevel = this.medlevel * Math.exp(-timesince * 0.0002);
+        let thislevel = this.medlevel * Math.exp(-timesince * 0.0007);
         if (timesince > 1000) {
             this.medlevel = thislevel;
             this.lastmedcalc = thistime;
