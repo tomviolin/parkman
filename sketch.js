@@ -1,6 +1,6 @@
 const cellWidth = 20;
 const cellHeight = 20;
-
+//
 let CANVAS_WIDTH;
 let CANVAS_HEIGHT;
 let CANVAS_REAL_HEIGHT;
