@@ -24,12 +24,22 @@ class Pacman {
         this.pos = terrain.cell_ij2pix(i, j);
         this.pos = createVector(this.pos.x + cellWidth / 2, this.pos.y + cellHeight / 2);
         //direzione
-        this.dir = createVector(1, 0);
+        // dir is the actual movement direction; (0,0) means Pacman is
+        // not being driven by the player right now (round start, BOOT
+        // splash, wall-hold, etc.).  facing is the last non-zero
+        // direction he was heading, used to pick the sprite row below.
+        this.dir = createVector(0, 0);
+        // which way Pacman is currently facing (for sprite selection);
+        // dir is used for actual movement, facing is preserved when dir
+        // is zeroed by a wall hit / round start so show() can still
+        // pick a directional sprite while stationary.
+        this.facing = createVector(1, 0);
         //variabili per animare la morte di PacMan 
         //   in englsh: variables to animate PacMan's death
         this.open = 0;
         this.death = false;
         this.deathStage = 0;
+        this.deathDone = false;
         //if open is 0, the mouth is fully opened,
         //if it's 2, the mouth is semi closed
         this.medlevel = 250;
@@ -41,11 +51,24 @@ class Pacman {
     }
 
     //questo metodo calcola il tremolio di PacMan
-    //in english: this method calculates PacMan's tremor       
+    //in english: this method calculates Pacman's tremor       
     trem() {
         let thistime = Date.now();
         let timesince = thistime - this.lastmedcalc;
-        let thislevel = this.medlevel * Math.exp(-timesince * 0.00027);
+        // The medlevel capsule only decays during actual gameplay.  When the
+        // game is paused / showing the splash / playing the intro jingle /
+        // waiting for the user to confirm, we hold the last computed level
+        // so Pacman doesn't shake himself to pieces waiting on the user.
+        if (typeof game !== 'undefined' && game.state !== STATES.RUNNING) {
+            this.lastmedcalc = thistime;
+            let held = this.medlevel;
+            let tremlevel = max(0.003, (26 - held) / 7);
+            return max(tremlevel * 1.5, 0.00511);
+        }
+        // med capsule decay rate is 0.000135 per ms (half of the original
+        // 0.00027 — twice as slow), so the player has more time between
+        // power-pellet top-ups before Pacman starts shaking badly.
+        let thislevel = this.medlevel * Math.exp(-timesince * 0.000235);
         if (timesince > 1000) {
             this.medlevel = thislevel;
             this.lastmedcalc = thistime;
@@ -55,26 +78,38 @@ class Pacman {
         //print(tremlevel);
         return max(tremlevel * 1.5, 0.00511);
     }
+
     //questo metodo mostra PacMan sullo schermo 
     //   in english: this method shows PacMan on the screen
     show() {
         s_shaky.setVolume(this.trem()*0.43);
         let k = exp(-this.trem()*0.19);
         s_siren1.setVolume(k*0.5);
-        this.changeMouth();
+        if (this.dir.x != 0 || this.dir.y != 0) {
+            // only animate the mouth while actually moving; when
+            // stationary Pacman shows with his mouth held half open
+            // (the classic Pacman 'icon' pose).
+            this.changeMouth();
+        } else {
+            this.open = 2;
+            this.lastmouth = 0;
+        }
         fill(255);
         this.imgIndex.x = 1 - this.open/2;
-        if (this.dir.x > 0) {
+        // pick the sprite row from facing (not dir) so Pacman keeps his
+        // direction even when stopped (e.g. at round start before the
+        // first movement input).
+        if (this.facing.x > 0) {
             // right
             this.imgIndex.y = 1;
 
-        } else if (this.dir.x < 0) {
+        } else if (this.facing.x < 0) {
             // left
             this.imgIndex.y = 0;
-        } else if (this.dir.y > 0) {
+        } else if (this.facing.y > 0) {
             // down
             this.imgIndex.y = 3;
-        } else if (this.dir.y < 0) {
+        } else if (this.facing.y < 0) {
             // up
             this.imgIndex.y = 2;
         }
@@ -87,8 +122,39 @@ class Pacman {
     unfreeze() {
         this.lastmove = Date.now();
     }
+    respawn(i, j) {
+        // reset Pacman to start state for the next life
+        let p = terrain.cell_ij2pix(i, j);
+        this.pos = createVector(p.x + cellWidth / 2, p.y + cellHeight / 2);
+        this.commands = [];
+        this.death = false;
+        this.deathStage = 0;
+        this.deathDone = false;
+        this.imgIndex = createVector(3, 0);
+        this.open = 0;
+        this.lastmove = Date.now();
+        this.lastmouth = 0;
+        // start of a round/respawn: top off the medlevel capsule and
+        // reset the decay clock so the tremor begins at the calmest
+        // setting the next time the user sees Pacman (which may be
+        // during the splash/intro toast while the round hasn't started
+        // yet). decay in trem() is gated to RUNNING state, so these
+        // values will hold until the actual round begins.
+        this.medlevel = 100;
+        this.lastmedcalc = Date.now();
+        // facing defaults to the right (the canonical Pacman pose) so
+        // the player has a clear landmark for where he'll head when the
+        // first movement key is pressed.
+        this.facing = createVector(1, 0);
+        // actual movement direction starts at zero so Pacman is truly
+        // stationary at round start; the first addInstruction() will set
+        // it to a real direction when the player presses a key.
+        this.dir = createVector(0, 0);
+    }
     move() {
-        if (!doLoop) return;
+        // Movement is only invoked from draw() while in the RUNNING state, so
+        // there's no more global doLoop gate to check here.  Pacman with an
+        // empty command queue (e.g. just spawned) will just stand still.
         //////console.log("pacman.move()")
         let thismove = Date.now();
         if (this.lastmove === 0) this.lastmove = thismove;
@@ -229,7 +295,7 @@ class Pacman {
             // must center x onto grid
             this.pos.x = Math.floor(this.pos.x / cellWidth) * cellWidth + cellWidth / 2;
         }
-        this.speed = (this.speed-1)*0.990  + 1;
+        this.speed = (this.speed-1.1)*0.9955  + 1.1;
     }
 
  
@@ -249,6 +315,12 @@ class Pacman {
     setDir(xdir, ydir) {
         this.dir.x = xdir;
         this.dir.y = ydir;
+        if (xdir != 0 || ydir != 0) {
+            // remember the last non-zero direction so show() can keep
+            // rendering Pacman facing this way when he stops moving.
+            this.facing.x = xdir;
+            this.facing.y = ydir;
+        }
   }
 
     //questo metodo verifica se PacMan colpisce uno spettro
@@ -266,6 +338,13 @@ class Pacman {
 
     //Questo metodo gestisce l'animazione della morte
     //in english: this method handles the death animation
+    //
+    // Called repeatedly from draw() while game.state === STATES.DYING.
+    // Advances the animation a single frame (gated by a 1000/9 ms timer like
+    // the original code), paints the current frame on top of the maze, and
+    // hands off to game.finishDeath() once stage 14 is reached.  All state
+    // transitions (lives decrement, ghost wipe, show toast, transition to
+    // RESPAWN/GAME_OVER) live in game.finishDeath().
     die() {
         if (this.deathStage == 0) {
             stop_all_sounds();
@@ -277,56 +356,22 @@ class Pacman {
         if (now - this.lastmove > 1000 / 9) {
             this.lastmove = now;
             this.deathStage += 1;
-        } else {
-            this.imgIndex.y = 12;
-            this.imgIndex.x = 0;
-            let doffset = this.deathStage;
-            if (doffset > 12) doffset = 12;
-            let xIndex = this.imgIndex.x + doffset;
-            imageMode(CENTER);
-            image(sheetImage, 
-                this.pos.x + cellWidth / 2 - imgWidth / 2, 
-                this.pos.y + cellHeight / 2 - imgHeight / 2, 
-                this.r * 3.5, this.r * 3.5,
-                imgWidth * xIndex, imgHeight * this.imgIndex.y, imgWidth, imgHeight);
-            if (this.deathStage >= 14) {
-                doLoop = false;
-                stop_all_sounds();
-                textAlign(CENTER);
-                textSize(40);
-                textStyle(BOLD);
-                fill(255, 211, 0);
-                text('YOU DIED!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-                player.lives--;
-                for (var i = ghosts.length; i > 0; i--) {
-                    ghosts.pop();
-                }
-                ghosts = [];
-                textSize(30);
-                if (player.lives == 0) {
-                    showStartButton('***GAME OVER*** press enter to reset',()=>{document.location.reload();});
-                } else if (player.lives == 2) {
-                    s_intermission.play();
-                    window.setTimeout(() => {
-                        s_intermission.stop();
-                    }, 10000);
-                    showStartButton('press enter for next life',()=>{
-                        startButtonElementParent.elt.remove();
-                        pacman.unfreeze();
-                        count = 0
-                        spawn=true;
-                        doLoop = true;
-                    });
-                } else {
-                    showStartButton('press enter for next life',()=>{
-                        startButtonElementParent.elt.remove();
-                        pacman.unfreeze();
-                        count = 0
-                        spawn=true;
-                        doLoop = true;
-                    });
-                }
-            }
+        }
+        // repaint the current death frame on top of the maze/ghosts
+        this.imgIndex.y = 12;
+        this.imgIndex.x = 0;
+        let doffset = Math.min(this.deathStage, 12);
+        let xIndex = this.imgIndex.x + doffset;
+        imageMode(CENTER);
+        image(sheetImage,
+            this.pos.x + cellWidth / 2 - imgWidth / 2,
+            this.pos.y + cellHeight / 2 - imgHeight / 2,
+            this.r * 3.5, this.r * 3.5,
+            imgWidth * xIndex, imgHeight * this.imgIndex.y, imgWidth, imgHeight);
+
+        if (this.deathStage >= 14 && !this.deathDone) {
+            this.deathDone = true;
+            game.finishDeath();
         }
     }
 
